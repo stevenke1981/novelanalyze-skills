@@ -1,5 +1,16 @@
 # Changelog
 
+## novel-characters 1.2.0 — 2026-08-07
+
+- 新增獨立真人版圖片組 sidecar，不改動既有卡通角色卡結構。
+- 新增全案視覺聖經、真人身份硬鎖定、表演、服裝與材質連戲設定。
+- 每位真人角色固定提供七張製作圖片：身份固定板、中性肖像、臉部角度、全身三視圖、表情九宮格、服裝材質板與電影關鍵畫面。
+- 新增零套件 `live-action-image-set.mjs`，可驗證語言、必要鏡頭、比例、人名洩漏、重複輸出、`cast.json` 對應與安全路徑。
+- 新增 `audit`，禁止在 PNG 不存在或為空時將圖片狀態標示為 `PASS`。
+- 新增真人版 Markdown renderer、完整範例與確定性自測。
+- GitHub Actions 於 Windows、macOS、Linux 及 Node.js 18／22／24 執行真人版自測與範例驗證。
+- 修正根目錄 README 的儲存庫名稱與 clone URL，避免安裝指令指向舊專案名稱。
+
 ## novel-characters 1.1.0 — 2026-08-07
 
 - 全面改寫為台灣繁體中文，逐字原文引文維持來源字體。

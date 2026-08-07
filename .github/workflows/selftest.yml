@@ -25,8 +25,15 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Run deterministic self-test
         run: node skills/novel-characters/scripts/selftest.mjs
+      - name: Run live-action self-test
+        run: node skills/novel-characters/scripts/live-action-selftest.mjs
       - name: Validate bundled fixture
         run: node skills/novel-characters/scripts/novel-characters.mjs validate skills/novel-characters/examples/渡口-cast.json skills/novel-characters/examples/渡口.txt
+      - name: Validate live-action fixture
+        run: node skills/novel-characters/scripts/live-action-image-set.mjs validate skills/novel-characters/examples/渡口-live-action.json skills/novel-characters/examples/渡口-cast.json
+      - name: Render live-action fixture
+        shell: bash
+        run: node skills/novel-characters/scripts/live-action-image-set.mjs render skills/novel-characters/examples/渡口-live-action.json --md > live-action-fixture.md
       - name: Test PowerShell installer
         if: runner.os == 'Windows' && matrix.node == 22
         shell: pwsh

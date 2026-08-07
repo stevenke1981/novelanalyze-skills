@@ -8,6 +8,8 @@ node_modules/
 /report.html
 /*-cast.json
 /*-cast.md
+/*-live-action.json
+/*-live-action.md
 /images/
 
 # 注意：skills/*/examples/ 下的樣例必須提交——它們同時是自測夾具。
