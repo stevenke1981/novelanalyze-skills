@@ -1,0 +1,4 @@
+interface:
+  display_name: "小說角色設定集"
+  short_description: "將小說整理成人物分析、形象、音色與三視圖製作設定集"
+  default_prompt: "Use $novel-characters 分析這本小說，產出台灣繁體中文角色設定集與離線報告。"

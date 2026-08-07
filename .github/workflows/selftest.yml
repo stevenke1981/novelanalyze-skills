@@ -1,0 +1,37 @@
+name: Self-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  novel-characters:
+    name: ${{ matrix.os }} / Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [18, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Run deterministic self-test
+        run: node skills/novel-characters/scripts/selftest.mjs
+      - name: Validate bundled fixture
+        run: node skills/novel-characters/scripts/novel-characters.mjs validate skills/novel-characters/examples/渡口-cast.json skills/novel-characters/examples/渡口.txt
+      - name: Test PowerShell installer
+        if: runner.os == 'Windows' && matrix.node == 22
+        shell: pwsh
+        run: .\scripts\install.ps1 -Codex -OpenCode
+      - name: Test Bash installer
+        if: runner.os != 'Windows' && matrix.node == 22
+        shell: bash
+        run: bash scripts/install.sh --codex --opencode
