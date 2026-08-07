@@ -1,28 +1,30 @@
 **繁體中文（台灣）** · [English](README.en.md)
 
-# shuohao-skills 繁體中文版
+# novelanalyze-skills
 
-這是 [eternityspring/shuohao-skills](https://github.com/eternityspring/shuohao-skills) 的台灣繁體中文強化版，提供可供 AI 編程代理使用的自包含技能。
+提供可供 AI 編程代理使用的自包含小說分析技能。目前收錄 `novel-characters`：將小說整理成可直接投入角色設計、配音、真人選角與視覺製作的角色設定集。
 
 | 技能 | 功能 |
 | --- | --- |
-| [**novel-characters**](skills/novel-characters/README.md) | 將小說整理成角色設定集：人物分析、形象提示詞、音色提示詞、三視圖與離線報告 |
+| [**novel-characters**](skills/novel-characters/README.md) | 人物分析、卡通形象、音色、三視圖、真人身份固定圖片組與離線報告 |
 
-## 主要改進
+## 主要能力
 
-- 技能指令、參考資料、CLI 訊息與範例全面改為台灣繁體中文。
-- `SKILL.md` 採用目前 Codex 技能格式，並加入 `agents/openai.yaml` 介面中繼資料。
-- 新增 Windows PowerShell 安裝器，支援 ChatGPT Codex 與 OpenCode。
-- 保留 Node.js 零套件依賴，並補上 GitHub Actions 跨平台自測。
-- 強化驗收流程，避免把未產生的三視圖或未掃描的內容誤報為完成。
+- 將長篇文本分塊後掃描角色，合併跨章節名稱與別名。
+- 產出有原文依據的人物分析、卡通形象提示詞與 TTS 音色提示詞。
+- 產出可選用的真人版 sidecar：身份硬鎖定、七張必要圖片、服裝連戲、逐張驗收與檔案稽核。
+- `SKILL.md` 採用目前 Codex 技能格式，並提供 `agents/openai.yaml` 介面中繼資料。
+- Windows PowerShell 與 macOS／Linux Bash 安裝器支援 Codex 與 OpenCode。
+- Node.js 零套件依賴；GitHub Actions 於 Windows、macOS、Linux 及 Node.js 18／22／24 自測。
+- 未實際產生的三視圖或真人圖片不得誤報為完成。
 
 ## 安裝
 
 ### Windows：Codex 與 OpenCode
 
 ```powershell
-git clone https://github.com/stevenke1981/shuohao-skills-zh-tw.git
-Set-Location .\shuohao-skills-zh-tw
+git clone https://github.com/stevenke1981/novelanalyze-skills.git
+Set-Location .\novelanalyze-skills
 .\scripts\install.ps1 -Codex -OpenCode
 ```
 
@@ -40,8 +42,8 @@ Set-Location .\shuohao-skills-zh-tw
 ### macOS／Linux
 
 ```bash
-git clone https://github.com/stevenke1981/shuohao-skills-zh-tw.git
-cd shuohao-skills-zh-tw
+git clone https://github.com/stevenke1981/novelanalyze-skills.git
+cd novelanalyze-skills
 ./scripts/install.sh --codex --opencode
 ```
 
@@ -52,14 +54,17 @@ Bash 安裝器使用符號連結，因此 `git pull` 後會立即套用更新。
 在 Codex 或 OpenCode 中呼叫：
 
 ```text
-$novel-characters 請分析 ./我的小說.txt，將結果輸出到 ./角色設定
+$novel-characters 請分析 ./我的小說.txt，輸出角色設定與真人版主要角色圖片組到 ./角色設定
 ```
 
-也可以直接使用 CLI 的確定性工具：
+也可以直接使用確定性工具：
 
 ```powershell
 node .\skills\novel-characters\scripts\novel-characters.mjs validate .\cast.json .\book.txt
 node .\skills\novel-characters\scripts\novel-characters.mjs render .\cast.json --html > report.html
+node .\skills\novel-characters\scripts\live-action-image-set.mjs validate .\book-live-action.json .\cast.json
+node .\skills\novel-characters\scripts\live-action-image-set.mjs render .\book-live-action.json --md > book-live-action.md
+node .\skills\novel-characters\scripts\live-action-image-set.mjs audit .\book-live-action.json . .\cast.json
 ```
 
 ## 需求
@@ -67,14 +72,16 @@ node .\skills\novel-characters\scripts\novel-characters.mjs render .\cast.json -
 | 項目 | 必要性 | 說明 |
 | --- | --- | --- |
 | Node.js 18+ | 必要 | 只使用標準函式庫，不需要 `npm install` |
-| 目前代理的模型額度 | 必要 | 角色掃描與分析由目前工作階段完成 |
-| Codex `$imagegen` | 選用 | 只用於三視圖；OpenCode 仍可完成所有文字與報告產出 |
+| 目前代理的模型額度 | 必要 | 角色掃描、分析與提示詞由目前工作階段完成 |
+| 目前環境的圖像工具 | 選用 | 用於卡通三視圖與真人圖片；沒有圖像工具仍可交付完整文字設定 |
 
 ## 驗證
 
 ```powershell
 node .\skills\novel-characters\scripts\selftest.mjs
+node .\skills\novel-characters\scripts\live-action-selftest.mjs
 node .\skills\novel-characters\scripts\novel-characters.mjs validate .\skills\novel-characters\examples\渡口-cast.json .\skills\novel-characters\examples\渡口.txt
+node .\skills\novel-characters\scripts\live-action-image-set.mjs validate .\skills\novel-characters\examples\渡口-live-action.json .\skills\novel-characters\examples\渡口-cast.json
 ```
 
 ## 授權與來源

@@ -1,22 +1,28 @@
 ---
 name: novel-characters
-description: 將小說或短篇故事整理成角色設定集，產出角色清單、人物分析、卡通形象提示詞、音色提示詞、JSON、Markdown 與離線 HTML 報告，並可在 Codex 中為主要角色製作三視圖。當使用者要求拆解小說角色、分析人物、建立角色卡、角色聖經、配音設定、角色設計稿，或從小說建立 character sheet 時使用。
+description: 將小說或短篇故事整理成角色設定集，產出角色清單、人物分析、卡通形象提示詞、真人版圖片組設定、音色提示詞、JSON、Markdown 與離線 HTML 報告，並可在圖像工具可用時為主要角色製作三視圖與真人身份固定圖。當使用者要求拆解小說角色、分析人物、建立角色卡、角色聖經、配音設定、角色設計稿、真人化角色、電影化角色、角色身份固定圖，或從小說建立 character sheet 時使用。
 ---
 
 # 小說角色設定集
 
-將本 `SKILL.md` 所在資料夾記為 `<SKILL_DIR>`。所有腳本都從 `<SKILL_DIR>/scripts/novel-characters.mjs` 執行，不要假設目前工作目錄就是技能目錄。
+將本 `SKILL.md` 所在資料夾記為 `<SKILL_DIR>`。所有腳本都從 `<SKILL_DIR>/scripts/` 執行，不要假設目前工作目錄就是技能目錄。
 
-本技能需要 Node.js 18 以上版本，且不需要 npm 套件或 API key。Codex、OpenCode 與 Claude Code 都能執行文字流程；只有 Codex 可直接使用內建 `$imagegen` 產生三視圖。
+本技能需要 Node.js 18 以上版本，且不需要 npm 套件或 API key。Codex、OpenCode 與 Claude Code 都能執行文字流程；只有目前環境真的提供圖像工具時才產生圖片。
 
 ## 成果契約
 
-至少交付：
+基本成果至少交付：
 
 - `<書名>-cast.json`：可供其他工具使用的結構化角色資料。
 - `<書名>-cast.md`：方便閱讀與版本管理的角色設定集。
 - `report.html`：可離線開啟、搜尋、列印的完整報告。
 - `images/*-turnaround.png`：僅在圖像工具可用且實際生成成功時交付。
+
+當使用者要求真人版、寫實角色、電影化角色或角色身份固定圖片組時，另外交付：
+
+- `<書名>-live-action.json`：真人身份鎖定、全案視覺聖經、七張必要圖片設定與逐張狀態。
+- `<書名>-live-action.md`：真人圖片組製作版。
+- `images/live-action/<slug>/*.png`：僅在實際生成並驗收成功時交付。
 
 人物分析與提示詞使用台灣繁體中文；英文提示詞欄位維持英文。`persona.evidence` 必須保留原文，無論原文使用哪一種語言或字體。
 
@@ -71,53 +77,107 @@ node "<SKILL_DIR>/scripts/novel-characters.mjs" merge "<workdir>" > "<workdir>/r
 }
 ```
 
-### 6. 執行強制驗證
+### 6. 執行角色卡強制驗證
 
 ```bash
-node "<SKILL_DIR>/scripts/novel-characters.mjs" validate "<cast.json>" "<book.txt>"
+node "<SKILL_DIR>/scripts/novel-characters.mjs" validate "<書名>-cast.json" "<book.txt>"
 ```
 
 驗證結構、角色重要度列舉、逐字引文、影像提示詞中的人名洩漏、欄位語言分工，以及應使用台灣繁體中文的分析欄位。有錯誤時逐項修正並重跑，直到結束碼為 0。
 
 不得刪除引文或放寬驗證規則來換取通過。
 
-### 7. 產生三視圖（選用）
+### 7. 建立真人版圖片組（按需求）
+
+只有使用者要求真人版、寫實、電影化、選角參考、角色身份固定或真人圖片組時執行。先讀取：
+
+- `references/live-action-image-set.md`
+- `references/live-action-schema.md`
+
+不要改寫既有角色卡中的卡通 `image.prompt`；另建 `<書名>-live-action.json`，避免破壞舊資料與報告相容性。
+
+預設只處理 `protagonist` 與 `major`；使用者明確要求全部角色時才擴大。每位角色都必須有七張必要圖片設定：
+
+1. `identity-board`
+2. `neutral-portrait`
+3. `face-angles`
+4. `full-body-turnaround`
+5. `expression-grid`
+6. `wardrobe-board`
+7. `cinematic-keyframe`
+
+完成後執行：
+
+```bash
+node "<SKILL_DIR>/scripts/live-action-image-set.mjs" validate "<書名>-live-action.json" "<書名>-cast.json"
+node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-action.json" --md > "<書名>-live-action.md"
+```
+
+英文與中文圖像提示詞都不得出現角色名、別名、作品名、作者名、演員名、明星名或公眾人物名。
+
+### 8. 產生卡通三視圖（選用）
 
 只為 `protagonist` 與 `major` 自動生成；使用者明確要求全部生成時才擴大範圍。
 
 先讀取 `references/turnaround.md`：
 
-- 在 Codex 中直接使用 `$imagegen`，不要遞迴呼叫 `codex exec`。
+- 在 Codex 中直接使用目前提供的圖像工具，不要遞迴呼叫 `codex exec`。
 - 在 OpenCode 或其他沒有圖像工具的環境中，保留三視圖提示詞並跳過產圖。
 - 每位角色分開生成，成功後確認實際檔案位於 `images/<slug>-turnaround.png`。
 - 不得把「已送出生成」當成「已產生檔案」。
 
-### 8. 產生報告
+### 9. 產生真人圖片組（選用）
 
-先完成選用的三視圖，再執行：
+只有第 7 步已建立設定且目前環境有圖像工具時執行。
+
+1. 每位角色先只生成 `identity-board`。
+2. 身份固定板未通過前，不得生成其餘六張。
+3. 後續每張都以同一張核准身份固定板為最高優先參考；支援參考圖權重時設為高。
+4. 完成一張就檢查同一人、骨相、膚色、髮際線、身形、服裝與道具連戲，再更新 `status`。
+5. `PASS` 只能用於存在、可開啟且通過驗收的 PNG；失敗用 `FAIL`，未執行用 `NOT_RUN`。
+6. 全部處理後執行：
 
 ```bash
-node "<SKILL_DIR>/scripts/novel-characters.mjs" render "<cast.json>" --md > "<書名>-cast.md"
-node "<SKILL_DIR>/scripts/novel-characters.mjs" render "<cast.json>" --html > "report.html"
+node "<SKILL_DIR>/scripts/live-action-image-set.mjs" audit "<書名>-live-action.json" "<輸出目錄>" "<書名>-cast.json"
+```
+
+圖片工具不可用時不阻斷文字成果，保留完整設定並將所有圖片維持 `NOT_RUN`。
+
+### 10. 產生角色報告
+
+先完成選用的三視圖與真人圖片組，再執行：
+
+```bash
+node "<SKILL_DIR>/scripts/novel-characters.mjs" render "<書名>-cast.json" --md > "<書名>-cast.md"
+node "<SKILL_DIR>/scripts/novel-characters.mjs" render "<書名>-cast.json" --html > "report.html"
 ```
 
 修改 HTML 樣式前先讀取 `references/report-style.md`，並保留離線、自包含、可搜尋、可列印、鍵盤焦點可見與減少動效等特性。
 
-### 9. 驗收
+若真人版設定有更新，最後再重跑真人版 Markdown：
+
+```bash
+node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-action.json" --md > "<書名>-live-action.md"
+```
+
+### 11. 驗收
 
 實際確認：
 
-1. `validate` 結束碼為 0。
+1. 角色卡 `validate` 結束碼為 0。
 2. JSON 與 Markdown 可讀，角色數一致。
 3. `report.html` 可開啟，角色索引、複製按鈕與內容正常。
-4. 聲稱已生成的每張三視圖都存在且可開啟。
-5. 若有截斷、跳過產圖或失敗角色，最後明確列出。
+4. 聲稱已生成的每張卡通三視圖都存在且可開啟。
+5. 有真人圖片組時，真人版 `validate` 與 `audit` 結束碼都為 0。
+6. 每張標示 `PASS` 的真人圖片都存在、可開啟，且與核准身份固定板為同一人。
+7. 若有截斷、跳過產圖、失敗角色或 `NOT_RUN` 圖片，最後明確列出。
 
 ## 邊界
 
 - 單次最多 24 個分塊，約 33 萬字元；超出時只分析已分塊範圍。
 - 分析欄位固定使用台灣繁體中文；逐字引文永遠保留原文。
 - 影像生成僅使用目前環境已提供的圖像工具，不自行要求或改用 `OPENAI_API_KEY`。
+- 真人身份固定不使用明星、演員或公眾人物相貌作捷徑。
 - 不在本技能內建立即時編輯器或長期資料庫。
 
 ## 自測
@@ -126,6 +186,7 @@ node "<SKILL_DIR>/scripts/novel-characters.mjs" render "<cast.json>" --html > "r
 
 ```bash
 node "<SKILL_DIR>/scripts/selftest.mjs"
+node "<SKILL_DIR>/scripts/live-action-selftest.mjs"
 ```
 
 自測不得呼叫模型或消耗模型額度。

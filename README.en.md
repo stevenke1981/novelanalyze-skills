@@ -1,40 +1,66 @@
 [繁體中文（台灣）](README.md) · **English**
 
-# shuohao-skills Traditional Chinese Edition
+# novelanalyze-skills
 
-This is a Taiwan Traditional Chinese enhancement of [eternityspring/shuohao-skills](https://github.com/eternityspring/shuohao-skills). It currently includes `novel-characters`, a self-contained skill that turns fiction into a production-ready character bible.
+Self-contained fiction-analysis skills for AI coding agents. The repository currently ships `novel-characters`, which turns prose into a production-ready character bible for character design, voice design, live-action casting references, and visual production.
+
+## Capabilities
+
+- Chunk long fiction, discover characters, and merge names and aliases across chapters.
+- Produce evidence-backed profiles, bilingual cartoon-image prompts, voice prompts, JSON, Markdown, and an offline HTML report.
+- Optionally produce a separate live-action sidecar with hard identity locks, seven required image shots, wardrobe continuity, per-image acceptance criteria, and file auditing.
+- Run without npm dependencies on Node.js 18 or newer.
+- Install into Codex and OpenCode on Windows, macOS, and Linux.
 
 ## Install
 
-Windows, for Codex and OpenCode:
+Windows:
 
 ```powershell
-git clone https://github.com/stevenke1981/shuohao-skills-zh-tw.git
-Set-Location .\shuohao-skills-zh-tw
+git clone https://github.com/stevenke1981/novelanalyze-skills.git
+Set-Location .\novelanalyze-skills
 .\scripts\install.ps1 -Codex -OpenCode
 ```
 
 macOS or Linux:
 
 ```bash
-git clone https://github.com/stevenke1981/shuohao-skills-zh-tw.git
-cd shuohao-skills-zh-tw
+git clone https://github.com/stevenke1981/novelanalyze-skills.git
+cd novelanalyze-skills
 ./scripts/install.sh --codex --opencode
 ```
 
 The Windows installer copies the skill and verifies complete SHA-256 tree parity. The Bash installer uses symlinks so updates apply immediately after `git pull`.
 
+## Use
+
+```text
+$novel-characters Analyze ./my-novel.txt and write the character bible and live-action image-set configuration to ./character-bible
+```
+
+Deterministic commands:
+
+```bash
+node skills/novel-characters/scripts/novel-characters.mjs validate cast.json book.txt
+node skills/novel-characters/scripts/novel-characters.mjs render cast.json --html > report.html
+node skills/novel-characters/scripts/live-action-image-set.mjs validate book-live-action.json cast.json
+node skills/novel-characters/scripts/live-action-image-set.mjs render book-live-action.json --md > book-live-action.md
+node skills/novel-characters/scripts/live-action-image-set.mjs audit book-live-action.json . cast.json
+```
+
 ## Requirements
 
-- Node.js 18 or newer; no npm dependencies.
-- The current agent session for the two model-driven analysis passes.
-- Codex `$imagegen` is optional and used only for turnaround images. OpenCode can complete all text, validation, and report outputs without it.
+- Node.js 18 or newer; no npm packages.
+- The current agent session for model-driven character analysis and prompt writing.
+- An image tool is optional. Without one, all JSON, Markdown, HTML, turnaround prompts, and live-action shot settings still remain deliverable.
 
 ## Validate
 
-```powershell
-node .\skills\novel-characters\scripts\selftest.mjs
-node .\skills\novel-characters\scripts\novel-characters.mjs validate .\skills\novel-characters\examples\渡口-cast.json .\skills\novel-characters\examples\渡口.txt
+```bash
+node skills/novel-characters/scripts/selftest.mjs
+node skills/novel-characters/scripts/live-action-selftest.mjs
+node skills/novel-characters/scripts/novel-characters.mjs validate skills/novel-characters/examples/渡口-cast.json skills/novel-characters/examples/渡口.txt
+node skills/novel-characters/scripts/live-action-image-set.mjs validate skills/novel-characters/examples/渡口-live-action.json skills/novel-characters/examples/渡口-cast.json
 ```
 
 ## License and provenance
