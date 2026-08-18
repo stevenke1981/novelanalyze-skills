@@ -1,20 +1,22 @@
-import { IDENTITY_STRING_FIELDS } from './shared.mjs';
+import { IDENTITY_STRING_FIELDS, getVisualMode } from './shared.mjs';
 
 const markdownCode = (value) => `\n\`\`\`text\n${String(value ?? '').replace(/\`\`\`/g, '\`\`\\\`')}\n\`\`\`\n`;
 const mdCell = (value) => String(value ?? '').replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>');
 
 export function renderMarkdown(manifest) {
+  const mode = getVisualMode(manifest.mode) ?? getVisualMode('live-action');
+  const labels = mode.styleLabels;
   const lines = [
-    `# ${manifest.source} · 真人版圖片組設定`, '',
+    `# ${manifest.source} · ${mode.heading}`, '',
     `- 規格版本：${manifest.version}`, `- 範圍：${manifest.scope}`, `- 模式：${manifest.mode}`, '',
     '## 全案視覺聖經', '', manifest.styleBible.visualWorld, '',
     '| 項目 | 設定 |', '| --- | --- |',
-    `| 寫實層級 | ${mdCell(manifest.styleBible.realityLevel)} |`,
-    `| 攝影系統 | ${mdCell(manifest.styleBible.capture.cameraSystem)} |`,
-    `| 鏡頭語言 | ${mdCell(manifest.styleBible.capture.lensLanguage)} |`,
-    `| 皮膚與材質 | ${mdCell(manifest.styleBible.capture.texture)} |`,
-    `| 光線 | ${mdCell(manifest.styleBible.capture.lighting)} |`,
-    `| 色彩 | ${mdCell(manifest.styleBible.capture.colorScience)} |`, '',
+    `| ${labels.realityLevel} | ${mdCell(manifest.styleBible.realityLevel)} |`,
+    `| ${labels.cameraSystem} | ${mdCell(manifest.styleBible.capture.cameraSystem)} |`,
+    `| ${labels.lensLanguage} | ${mdCell(manifest.styleBible.capture.lensLanguage)} |`,
+    `| ${labels.texture} | ${mdCell(manifest.styleBible.capture.texture)} |`,
+    `| ${labels.lighting} | ${mdCell(manifest.styleBible.capture.lighting)} |`,
+    `| ${labels.colorScience} | ${mdCell(manifest.styleBible.capture.colorScience)} |`, '',
     '### 全域反向提示詞', markdownCode(manifest.styleBible.globalNegativePrompt),
   ];
 
@@ -25,7 +27,7 @@ export function renderMarkdown(manifest) {
     for (const field of IDENTITY_STRING_FIELDS) lines.push(`| ${field} | ${mdCell(character.identityLock[field])} |`);
     lines.push('', `**必須保持：** ${character.identityLock.mustRemain.join('、')}`, '',
       `**禁止出現：** ${character.identityLock.mustNotAppear.join('、')}`, '',
-      '### 真人基礎提示詞', markdownCode(character.basePrompt),
+      `### ${mode.basePromptHeading}`, markdownCode(character.basePrompt),
       '### 角色反向提示詞', markdownCode(character.characterNegativePrompt), '### 圖片組', '');
 
     for (const shot of character.shots) {

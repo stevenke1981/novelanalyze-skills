@@ -1,15 +1,53 @@
 import { createHash } from 'node:crypto';
 
-export const LIVE_ACTION_VERSION = '1.0';
+export const VISUAL_PACK_VERSION = '1.0';
+export const LIVE_ACTION_VERSION = VISUAL_PACK_VERSION;
 export const REQUIRED_SHOTS = Object.freeze([
   { id: 'identity-board', title: '角色身份固定參考圖表', aspectRatio: '16:10' },
   { id: 'neutral-portrait', title: '中性肖像', aspectRatio: '4:5' },
   { id: 'face-angles', title: '臉部角度組', aspectRatio: '16:10' },
-  { id: 'full-body-turnaround', title: '真人全身三視圖', aspectRatio: '16:10' },
+  { id: 'full-body-turnaround', title: '全身三視圖', aspectRatio: '16:10' },
   { id: 'expression-grid', title: '表情九宮格', aspectRatio: '16:10' },
   { id: 'wardrobe-board', title: '主要服裝與材質板', aspectRatio: '16:10' },
-  { id: 'cinematic-keyframe', title: '電影感關鍵畫面', aspectRatio: '16:9' },
+  { id: 'cinematic-keyframe', title: '敘事關鍵畫面', aspectRatio: '16:9' },
 ]);
+
+export const VISUAL_MODES = Object.freeze({
+  'live-action': Object.freeze({
+    id: 'live-action',
+    label: '真人版',
+    outputDir: 'live-action',
+    heading: '真人版圖片組設定',
+    basePromptHeading: '真人基礎提示詞',
+    styleLabels: Object.freeze({
+      realityLevel: '寫實層級',
+      cameraSystem: '攝影系統',
+      lensLanguage: '鏡頭語言',
+      texture: '皮膚與材質',
+      lighting: '光線',
+      colorScience: '色彩',
+    }),
+  }),
+  comic: Object.freeze({
+    id: 'comic',
+    label: '漫畫版',
+    outputDir: 'comic',
+    heading: '漫畫版圖片組設定',
+    basePromptHeading: '漫畫基礎提示詞',
+    styleLabels: Object.freeze({
+      realityLevel: '畫風層級',
+      cameraSystem: '構圖系統',
+      lensLanguage: '分鏡語言',
+      texture: '線條與材質',
+      lighting: '光線',
+      colorScience: '色彩',
+    }),
+  }),
+});
+
+export function getVisualMode(mode) {
+  return VISUAL_MODES[mode] ?? null;
+}
 
 export const IMPORTANCE = new Set(['protagonist', 'major', 'supporting', 'minor']);
 export const STATUS = new Set(['NOT_RUN', 'PASS', 'FAIL']);

@@ -2,6 +2,7 @@
 node_modules/
 *.log
 .codebase-memory/
+.opencode/
 .tmp-forward-test/
 
 # skill 的執行產物（使用者在自己的輸出目錄裡生成的）
@@ -10,6 +11,8 @@ node_modules/
 /*-cast.md
 /*-live-action.json
 /*-live-action.md
+/*-comic.json
+/*-comic.md
 /images/
 
 # 注意：skills/*/examples/ 下的樣例必須提交——它們同時是自測夾具。

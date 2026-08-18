@@ -1,6 +1,6 @@
 # 真人版圖片組資料結構
 
-真人版圖片組使用獨立 sidecar JSON，不改動既有 `cast.json` 的卡通形象欄位。檔名建議為 `<書名>-live-action.json`。
+真人版圖片組使用獨立 sidecar JSON，不改動既有 `cast.json` 的卡通形象欄位。檔名建議為 `<書名>-live-action.json`。漫畫版使用同一套欄位與驗證器，差異見 `comic-schema.md`。
 
 ## 頂層
 

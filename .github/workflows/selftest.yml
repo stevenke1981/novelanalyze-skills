@@ -25,12 +25,19 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Run deterministic self-test
         run: node skills/novel-characters/scripts/selftest.mjs
+      - name: Run comic self-test
+        run: node skills/novel-characters/scripts/comic-selftest.mjs
       - name: Run live-action self-test
         run: node skills/novel-characters/scripts/live-action-selftest.mjs
       - name: Validate bundled fixture
         run: node skills/novel-characters/scripts/novel-characters.mjs validate skills/novel-characters/examples/渡口-cast.json skills/novel-characters/examples/渡口.txt
+      - name: Validate comic fixture
+        run: node skills/novel-characters/scripts/comic-image-set.mjs validate skills/novel-characters/examples/渡口-comic.json skills/novel-characters/examples/渡口-cast.json
       - name: Validate live-action fixture
         run: node skills/novel-characters/scripts/live-action-image-set.mjs validate skills/novel-characters/examples/渡口-live-action.json skills/novel-characters/examples/渡口-cast.json
+      - name: Render comic fixture
+        shell: bash
+        run: node skills/novel-characters/scripts/comic-image-set.mjs render skills/novel-characters/examples/渡口-comic.json --md > comic-fixture.md
       - name: Render live-action fixture
         shell: bash
         run: node skills/novel-characters/scripts/live-action-image-set.mjs render skills/novel-characters/examples/渡口-live-action.json --md > live-action-fixture.md

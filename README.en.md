@@ -2,13 +2,13 @@
 
 # novelanalyze-skills
 
-Self-contained fiction-analysis skills for AI coding agents. The repository currently ships `novel-characters`, which turns prose into a production-ready character bible for character design, voice design, live-action casting references, and visual production.
+Self-contained fiction-analysis skills for AI coding agents. The repository currently ships `novel-characters`, which turns prose into a production-ready character bible for character design, voice design, comic production, live-action casting references, and visual production.
 
 ## Capabilities
 
 - Chunk long fiction, discover characters, and merge names and aliases across chapters.
 - Produce evidence-backed profiles, bilingual cartoon-image prompts, voice prompts, JSON, Markdown, and an offline HTML report.
-- Optionally produce a separate live-action sidecar with hard identity locks, seven required image shots, wardrobe continuity, per-image acceptance criteria, and file auditing.
+- By default produce parallel comic and live-action sidecars with hard identity locks, seven required image shots, wardrobe continuity, per-image acceptance criteria, and file auditing.
 - Run without npm dependencies on Node.js 18 or newer.
 - Install into Codex and OpenCode on Windows, macOS, and Linux.
 
@@ -35,7 +35,7 @@ The Windows installer copies the skill and verifies complete SHA-256 tree parity
 ## Use
 
 ```text
-$novel-characters Analyze ./my-novel.txt and write the character bible and live-action image-set configuration to ./character-bible
+$novel-characters Analyze ./my-novel.txt and write the character bible plus comic and live-action image-set configuration to ./character-bible
 ```
 
 Deterministic commands:
@@ -43,6 +43,9 @@ Deterministic commands:
 ```bash
 node skills/novel-characters/scripts/novel-characters.mjs validate cast.json book.txt
 node skills/novel-characters/scripts/novel-characters.mjs render cast.json --html > report.html
+node skills/novel-characters/scripts/comic-image-set.mjs validate book-comic.json cast.json
+node skills/novel-characters/scripts/comic-image-set.mjs render book-comic.json --md > book-comic.md
+node skills/novel-characters/scripts/comic-image-set.mjs audit book-comic.json . cast.json
 node skills/novel-characters/scripts/live-action-image-set.mjs validate book-live-action.json cast.json
 node skills/novel-characters/scripts/live-action-image-set.mjs render book-live-action.json --md > book-live-action.md
 node skills/novel-characters/scripts/live-action-image-set.mjs audit book-live-action.json . cast.json
@@ -52,14 +55,16 @@ node skills/novel-characters/scripts/live-action-image-set.mjs audit book-live-a
 
 - Node.js 18 or newer; no npm packages.
 - The current agent session for model-driven character analysis and prompt writing.
-- An image tool is optional. Without one, all JSON, Markdown, HTML, turnaround prompts, and live-action shot settings still remain deliverable.
+- An image tool is optional. Without one, all JSON, Markdown, HTML, turnaround prompts, and both comic and live-action shot settings still remain deliverable.
 
 ## Validate
 
 ```bash
 node skills/novel-characters/scripts/selftest.mjs
+node skills/novel-characters/scripts/comic-selftest.mjs
 node skills/novel-characters/scripts/live-action-selftest.mjs
 node skills/novel-characters/scripts/novel-characters.mjs validate skills/novel-characters/examples/渡口-cast.json skills/novel-characters/examples/渡口.txt
+node skills/novel-characters/scripts/comic-image-set.mjs validate skills/novel-characters/examples/渡口-comic.json skills/novel-characters/examples/渡口-cast.json
 node skills/novel-characters/scripts/live-action-image-set.mjs validate skills/novel-characters/examples/渡口-live-action.json skills/novel-characters/examples/渡口-cast.json
 ```
 

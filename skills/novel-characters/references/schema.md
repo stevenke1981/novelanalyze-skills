@@ -82,22 +82,24 @@
 | `voice.prompt` | string | **英文** | 給 TTS 音色設計引擎 |
 | `voice.promptZh` | string | 台灣繁體中文 | 上面那條的繁體中文版 |
 
-## 真人版圖片組 sidecar
+## 漫畫版與真人版圖片組 sidecar
 
-真人版、寫實或電影化設定**不直接塞進角色卡**。完成 `cast.json` 後，依下列文件另建 `<書名>-live-action.json`：
+漫畫製作包與真人／寫實／電影化設定**都不直接塞進角色卡**。完成 `cast.json` 後，預設同時另建兩份 sidecar：
 
-- `live-action-image-set.md`：工作順序、身份鎖定、七張必要圖片與產圖驗收。
-- `live-action-schema.md`：完整 JSON 欄位與語言約束。
+- `comic-image-set.md` / `comic-schema.md`：漫畫身份鎖定、七張必要圖片與產圖驗收。
+- `live-action-image-set.md` / `live-action-schema.md`：真人身份鎖定、七張必要圖片與產圖驗收。
 
-這樣可以同時保留既有卡通提示詞、三視圖與報告相容性，又能提供真人身份固定板、臉部角度、表情、服裝連戲與電影關鍵畫面。
+這樣可以同時保留既有卡通提示詞、三視圖與報告相容性，又能平行提供漫畫與真人兩套製作圖：身份固定板、臉部角度、表情、服裝連戲與敘事關鍵畫面。
 
 ## 驗證
 
 `scripts/novel-characters.mjs validate <cast.json> <book.txt>` 會檢查：結構完整性、`importance` 列舉、**引文逐字**、**出圖提示詞不含人名**、**語言分工**與**台灣繁體中文欄位**。違規時逐條列出並以結束碼 1 結束。
 
-真人版 sidecar 另用：
+漫畫版與真人版 sidecar 另用：
 
 ```bash
+node scripts/comic-image-set.mjs validate <comic.json> <cast.json>
+node scripts/comic-image-set.mjs audit <comic.json> <output-directory> <cast.json>
 node scripts/live-action-image-set.mjs validate <live-action.json> <cast.json>
 node scripts/live-action-image-set.mjs audit <live-action.json> <output-directory> <cast.json>
 ```

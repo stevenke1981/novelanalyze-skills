@@ -2,16 +2,17 @@ import {
   ASPECT_RATIOS, CAPTURE_STRING_FIELDS, IDENTITY_STRING_FIELDS, IMPORTANCE,
   LIVE_ACTION_VERSION, PERFORMANCE_STRING_FIELDS, REQUIRED_SHOTS, SCOPE,
   SHOT_STRING_FIELDS, STATUS, STYLE_STRING_FIELDS, asStringArray, checkEnglish,
-  checkPromptNames, checkZhTw, isNonEmptyString, isPlainObject, keyOf, mapCast,
+  checkPromptNames, checkZhTw, getVisualMode, isNonEmptyString, isPlainObject, keyOf, mapCast,
   requireStringArray, requireStrings, slug, unique,
 } from './shared.mjs';
 
 export function validateManifest(manifest, cast = null) {
   const problems = [];
-  if (!isPlainObject(manifest)) return ['真人版圖片組設定必須是 JSON 物件'];
+  if (!isPlainObject(manifest)) return ['圖片組設定必須是 JSON 物件'];
 
   if (manifest.version !== LIVE_ACTION_VERSION) problems.push(`version 必須是 ${LIVE_ACTION_VERSION}`);
-  if (manifest.mode !== 'live-action') problems.push('mode 必須是 live-action');
+  const visualMode = getVisualMode(manifest.mode);
+  if (!visualMode) problems.push('mode 必須是 live-action 或 comic');
   if (!isNonEmptyString(manifest.source)) problems.push('source 缺失或為空');
   if (!SCOPE.has(manifest.scope)) problems.push('scope 必須是 main/all/custom');
 
@@ -49,7 +50,7 @@ export function validateManifest(manifest, cast = null) {
   const seenOutputs = new Set();
 
   for (const [characterIndex, character] of manifest.characters.entries()) {
-    validateCharacter(character, characterIndex, castByName, seenCharacters, seenOutputs, problems);
+    validateCharacter(character, characterIndex, visualMode, castByName, seenCharacters, seenOutputs, problems);
   }
 
   if (cast && Array.isArray(cast.characters)) {
@@ -69,7 +70,7 @@ export function validateManifest(manifest, cast = null) {
   return problems;
 }
 
-function validateCharacter(character, characterIndex, castByName, seenCharacters, seenOutputs, problems) {
+function validateCharacter(character, characterIndex, visualMode, castByName, seenCharacters, seenOutputs, problems) {
   const prefix = `characters[${characterIndex}]`;
   const name = character?.name ?? '(無名)';
   const label = `${prefix}(${name})`;
@@ -139,7 +140,7 @@ function validateCharacter(character, characterIndex, castByName, seenCharacters
 
   const shotIds = new Set();
   for (const [shotIndex, shot] of character.shots.entries()) {
-    validateShot(shot, shotIndex, character, label, names, shotIds, seenOutputs, problems);
+    validateShot(shot, shotIndex, character, visualMode, label, names, shotIds, seenOutputs, problems);
   }
 
   for (const required of REQUIRED_SHOTS) {
@@ -153,7 +154,7 @@ function validateCharacter(character, characterIndex, castByName, seenCharacters
   }
 }
 
-function validateShot(shot, shotIndex, character, label, names, shotIds, seenOutputs, problems) {
+function validateShot(shot, shotIndex, character, visualMode, label, names, shotIds, seenOutputs, problems) {
   const shotLabel = `${label}.shots[${shotIndex}]`;
   requireStrings(shot, SHOT_STRING_FIELDS, shotLabel, problems);
   if (!isPlainObject(shot)) return;
@@ -174,7 +175,8 @@ function validateShot(shot, shotIndex, character, label, names, shotIds, seenOut
   requireStringArray(shot.acceptance, `${shotLabel}.acceptance`, problems, 3);
   for (const [index, item] of asStringArray(shot.acceptance).entries()) checkZhTw(item, `${shotLabel}.acceptance[${index}]`, problems);
 
-  const expectedPrefix = `images/live-action/${character.slug}/`;
+  const outputDir = visualMode?.outputDir ?? 'live-action';
+  const expectedPrefix = `images/${outputDir}/${character.slug}/`;
   if (!isNonEmptyString(shot.output) || !shot.output.startsWith(expectedPrefix) || !shot.output.endsWith('.png')) {
     problems.push(`${shotLabel}.output 必須位於 ${expectedPrefix} 並使用 .png`);
   }

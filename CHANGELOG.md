@@ -1,5 +1,13 @@
 # Changelog
 
+## novel-characters 1.3.0 — 2026-08-18
+
+- 預設同時產出漫畫版與真人版圖片組 sidecar，不再把漫畫製作包只留在角色卡卡通欄位。
+- 共用視覺包驗證器支援 `mode=comic` 與 `mode=live-action`，輸出目錄分別為 `images/comic/` 與 `images/live-action/`。
+- 新增 `comic-image-set.mjs`、`comic-schema.md`、`comic-image-set.md`、`渡口-comic.json`、對應 Markdown 範例與漫畫版確定性自測。
+- Markdown renderer 依模式切換標題與視覺聖經欄位名稱。
+- 更新技能契約、README、介面中繼資料與 GitHub Actions，使兩種視覺版本成為基本成果。
+
 ## novel-characters 1.2.0 — 2026-08-07
 
 - 新增獨立真人版圖片組 sidecar，不改動既有卡通角色卡結構。

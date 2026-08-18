@@ -1,0 +1,255 @@
+{
+  "version": "1.0",
+  "source": "渡口",
+  "mode": "comic",
+  "scope": "custom",
+  "styleBible": {
+    "visualWorld": "民國年間江南渡口的水墨淡彩漫畫美術，線條克制、色彩低飽和，人物造型樸素並保留生活磨損。",
+    "realityLevel": "Hand-drawn ink-wash comic character design with clean confident linework, flat-to-wash colour, and no photorealism.",
+    "capture": {
+      "cameraSystem": "Orthographic comic model-sheet framing with even graphic composition.",
+      "lensLanguage": "Flat graphic perspective for reference sheets and mild cinematic panel depth for narrative keyframes.",
+      "texture": "Visible ink line weight, paper grain, restrained cel-to-wash colouring, and graphic fabric folds.",
+      "lighting": "Even graphic lighting for reference sheets and soft ink-wash atmosphere for narrative panels.",
+      "colorScience": "Muted navy, weathered brown, soft cream, cool grey mist, faded rose, and restrained print-ink saturation."
+    },
+    "continuityPolicy": {
+      "approvedReferenceFirst": true,
+      "reuseSeedWhenSupported": true,
+      "identityReferenceWeight": "high",
+      "wardrobeReferenceWeight": "high",
+      "locked": [
+        "facial width-to-height ratio",
+        "eye shape and spacing",
+        "brow geometry",
+        "nose profile",
+        "lip shape",
+        "hairline and braid structure",
+        "body proportions",
+        "costume colour blocks"
+      ],
+      "variable": [
+        "facial expression",
+        "body pose",
+        "panel composition",
+        "motivated ink-wash contrast"
+      ]
+    },
+    "globalNegativePrompt": "photorealistic, live-action, photograph, 3d render, plastic skin, celebrity likeness, modern styling, moe anime, identity drift, face morphing, text, watermark"
+  },
+  "characters": [
+    {
+      "name": "沈知微",
+      "aliases": [
+        "姑娘"
+      ],
+      "importance": "protagonist",
+      "slug": "沈知微",
+      "identityLock": {
+        "agePresentation": "外觀約十九歲，年輕但不帶幼童感。",
+        "genderPresentation": "女性，造型樸素而克制。",
+        "ancestryAndRegion": "東亞漢族外觀，符合民國江南水鄉生活背景。",
+        "faceGeometry": "窄鵝蛋臉，臉頰柔和，下頜纖細，下巴短而圓。",
+        "eyes": "深褐眼睛，眼距自然，眼神警覺且常帶遲疑。",
+        "brows": "自然平緩眉形，眉色接近黑髮，眉眼距離固定。",
+        "nose": "鼻樑纖細平直，鼻尖小而自然，側面輪廓固定。",
+        "mouth": "唇形自然偏薄，唇峰柔和，嘴角慣常微收。",
+        "skin": "偏白紙感膚色，以淡彩表現血色，不畫真實毛孔。",
+        "hair": "中央分線，兩條長黑辮，辮梢繫褪色紅繩，髮際固定。",
+        "body": "身形單薄，肩膀微內收，四肢纖細，站姿帶輕微防備。",
+        "distinctiveMarks": [
+          "兩條長辮末端的褪色紅繩與緊抱皮箱時發白的指節。"
+        ],
+        "mustRemain": [
+          "窄鵝蛋臉比例",
+          "深褐眼睛與自然眼距",
+          "纖細平直鼻形",
+          "自然偏薄唇形",
+          "中央分線與雙長辮",
+          "偏白淡彩膚色",
+          "單薄身形與內收肩膀",
+          "藏青學生裝與舊皮箱"
+        ],
+        "mustNotAppear": [
+          "成熟艷麗妝容",
+          "現代髮型或服裝",
+          "不同人物的臉部輪廓",
+          "真人照片質感"
+        ]
+      },
+      "performance": {
+        "defaultExpression": "安靜而警覺，嘴角微收。",
+        "gaze": "多數時間避開長久對視，必要時短暫抬眼。",
+        "posture": "肩膀微內收，手臂常護住胸前皮箱。",
+        "movement": "動作幅度小，停頓略多，緊張時手指用力。"
+      },
+      "wardrobe": {
+        "primary": "藏青色學生上衣、素白衣領與及小腿裙，搭配磨舊棕色皮箱。",
+        "palette": [
+          "藏青",
+          "米白",
+          "褪色紅",
+          "磨舊棕"
+        ],
+        "materials": [
+          "低光澤棉布色塊",
+          "舊皮革平塗",
+          "細紅棉繩"
+        ],
+        "continuityNotes": "所有圖片維持相同衣領寬度、鈕扣數量、裙長、辮繩位置、皮箱刮痕與磨損方向。"
+      },
+      "basePrompt": "A fictional nineteen-year-old Chinese student from the 1930s drawn as a hand-drawn ink-wash comic character, slender build with slightly inward shoulders, narrow oval face, deep brown wary eyes, fine straight nose, naturally thin lips, pale wash skin, centre-parted black hair in two long braids tied with faded red cord, wearing a worn navy student tunic with a plain cream collar and carrying a battered brown leather suitcase.",
+      "basePromptZh": "虛構的十九歲民國女學生，以水墨淡彩漫畫繪成，身形單薄、肩膀微內收，窄鵝蛋臉、深褐警覺眼睛、纖細平直鼻形、自然偏薄嘴唇，偏白淡彩膚色；中央分線黑髮編成兩條長辮，辮梢繫褪色紅繩，穿磨舊藏青學生裝配米白衣領，攜帶棕色舊皮箱。",
+      "characterNegativePrompt": "photorealistic, live-action, photograph, mature glamorous face, heavy makeup, modern haircut, loose hair, different braid length, different eye spacing, wide jaw, altered nose profile, 3d render, luxury costume, modern suitcase, identity drift",
+      "shots": [
+        {
+          "id": "identity-board",
+          "title": "漫畫角色身份固定參考圖表",
+          "required": true,
+          "aspectRatio": "16:10",
+          "resolutionHint": "At least 3072 pixels on the long edge",
+          "framing": "Professional multi-panel comic identity reference board",
+          "camera": "Orthographic comic model-sheet framing",
+          "lighting": "Even graphic lighting with readable ink edges",
+          "background": "Clean warm-grey paper background",
+          "prompt": "Create a comic identity lock board with front portrait, profile, three-quarter portrait, full body, hairline detail, line-weight detail, and wardrobe detail. Every panel must depict the exact same fictional person.",
+          "promptZh": "建立專業漫畫身份固定板，包含正面肖像、側面、四分之三肖像、全身、髮際、線條與服裝細節；所有面板必須是完全相同的虛構人物。",
+          "negativePrompt": "different person, identity drift, face morphing, photorealistic, live-action, photograph, 3d render, plastic skin, modern clothing, extra fingers, text, watermark",
+          "output": "images/comic/沈知微/01-identity-board.png",
+          "status": "NOT_RUN",
+          "acceptance": [
+            "所有畫面可辨識為同一位人物。",
+            "臉部輪廓、髮型與畫風沒有漂移。",
+            "服裝、配件與身形比例保持連戲。"
+          ]
+        },
+        {
+          "id": "neutral-portrait",
+          "title": "漫畫中性立繪",
+          "required": true,
+          "aspectRatio": "4:5",
+          "resolutionHint": "At least 3072 pixels on the long edge",
+          "framing": "Chest-up neutral comic portrait",
+          "camera": "Orthographic comic model-sheet framing",
+          "lighting": "Even graphic lighting with readable ink edges",
+          "background": "Clean warm-grey paper background",
+          "prompt": "Create a neutral chest-up comic portrait of the approved fictional person, relaxed mouth, direct gaze, clean ink-wash colour, and unchanged identity.",
+          "promptZh": "建立胸上中性漫畫立繪，嘴部放鬆、直視鏡頭、保留清楚淡彩層次，人物身份不得改變。",
+          "negativePrompt": "different person, identity drift, face morphing, photorealistic, live-action, photograph, 3d render, plastic skin, modern clothing, extra fingers, text, watermark",
+          "output": "images/comic/沈知微/02-neutral-portrait.png",
+          "status": "NOT_RUN",
+          "acceptance": [
+            "所有畫面可辨識為同一位人物。",
+            "臉部輪廓、髮型與畫風沒有漂移。",
+            "服裝、配件與身形比例保持連戲。"
+          ]
+        },
+        {
+          "id": "face-angles",
+          "title": "漫畫臉部角度組",
+          "required": true,
+          "aspectRatio": "16:10",
+          "resolutionHint": "At least 3072 pixels on the long edge",
+          "framing": "Five-view comic facial angle reference sheet",
+          "camera": "Orthographic comic model-sheet framing",
+          "lighting": "Even graphic lighting with readable ink edges",
+          "background": "Clean warm-grey paper background",
+          "prompt": "Create five comic facial views of the approved fictional person: front, left three-quarter, left profile, right three-quarter, and slight upward angle. Keep facial geometry identical.",
+          "promptZh": "建立五個漫畫臉部角度：正面、左四分之三、左側面、右四分之三與微仰角；輪廓必須完全一致。",
+          "negativePrompt": "different person, identity drift, face morphing, photorealistic, live-action, photograph, 3d render, plastic skin, modern clothing, extra fingers, text, watermark",
+          "output": "images/comic/沈知微/03-face-angles.png",
+          "status": "NOT_RUN",
+          "acceptance": [
+            "所有畫面可辨識為同一位人物。",
+            "臉部輪廓、髮型與畫風沒有漂移。",
+            "服裝、配件與身形比例保持連戲。"
+          ]
+        },
+        {
+          "id": "full-body-turnaround",
+          "title": "漫畫全身三視圖",
+          "required": true,
+          "aspectRatio": "16:10",
+          "resolutionHint": "At least 3072 pixels on the long edge",
+          "framing": "Orthographic full-body comic turnaround sheet",
+          "camera": "Orthographic comic model-sheet framing",
+          "lighting": "Even graphic lighting with readable ink edges",
+          "background": "Plain pure white paper background",
+          "prompt": "Create front, left-side, and back full-body comic views of the approved fictional person on one ground line with identical body proportions, costume, and accessories.",
+          "promptZh": "建立正面、左側面與背面漫畫全身三視圖，共用同一基準線，身形比例、服裝與配件必須一致。",
+          "negativePrompt": "different person, identity drift, face morphing, photorealistic, live-action, photograph, 3d render, plastic skin, modern clothing, extra fingers, text, watermark",
+          "output": "images/comic/沈知微/04-full-body-turnaround.png",
+          "status": "NOT_RUN",
+          "acceptance": [
+            "所有畫面可辨識為同一位人物。",
+            "臉部輪廓、髮型與畫風沒有漂移。",
+            "服裝、配件與身形比例保持連戲。"
+          ]
+        },
+        {
+          "id": "expression-grid",
+          "title": "漫畫表情九宮格",
+          "required": true,
+          "aspectRatio": "16:10",
+          "resolutionHint": "At least 3072 pixels on the long edge",
+          "framing": "Three-by-three comic facial expression grid",
+          "camera": "Orthographic comic model-sheet framing",
+          "lighting": "Even graphic lighting with readable ink edges",
+          "background": "Clean warm-grey paper background",
+          "prompt": "Create a three-by-three comic expression grid of the approved fictional person: neutral, wary, restrained fear, resolve, doubt, grief, anger, relief, and quiet focus. Change only expression and gaze.",
+          "promptZh": "建立三乘三漫畫表情格：中性、警覺、克制恐懼、決心、疑惑、悲傷、憤怒、安心與專注；只改表情與視線。",
+          "negativePrompt": "different person, identity drift, face morphing, photorealistic, live-action, photograph, 3d render, plastic skin, modern clothing, extra fingers, text, watermark",
+          "output": "images/comic/沈知微/05-expression-grid.png",
+          "status": "NOT_RUN",
+          "acceptance": [
+            "所有畫面可辨識為同一位人物。",
+            "臉部輪廓、髮型與畫風沒有漂移。",
+            "服裝、配件與身形比例保持連戲。"
+          ]
+        },
+        {
+          "id": "wardrobe-board",
+          "title": "漫畫服裝與道具板",
+          "required": true,
+          "aspectRatio": "16:10",
+          "resolutionHint": "At least 3072 pixels on the long edge",
+          "framing": "Comic wardrobe continuity and prop reference board",
+          "camera": "Orthographic comic model-sheet framing",
+          "lighting": "Even graphic lighting with readable ink edges",
+          "background": "Clean warm-grey paper background",
+          "prompt": "Create a comic wardrobe continuity board showing the approved costume front and back, collar, buttons, braid ties, suitcase, colour blocks, wear marks, and exact palette.",
+          "promptZh": "建立主要服裝連戲與道具板，呈現正背面、衣領、鈕扣、辮繩、皮箱、色塊、磨損記號與精確色彩。",
+          "negativePrompt": "different person, identity drift, face morphing, photorealistic, live-action, photograph, 3d render, plastic skin, modern clothing, extra fingers, text, watermark",
+          "output": "images/comic/沈知微/06-wardrobe-board.png",
+          "status": "NOT_RUN",
+          "acceptance": [
+            "所有畫面可辨識為同一位人物。",
+            "臉部輪廓、髮型與畫風沒有漂移。",
+            "服裝、配件與身形比例保持連戲。"
+          ]
+        },
+        {
+          "id": "cinematic-keyframe",
+          "title": "漫畫分鏡關鍵畫面",
+          "required": true,
+          "aspectRatio": "16:9",
+          "resolutionHint": "At least 3072 pixels on the long edge",
+          "framing": "Narrative comic keyframe panel",
+          "camera": "Mild cinematic comic panel composition",
+          "lighting": "Soft ink-wash atmosphere with readable silhouette",
+          "background": "Misty historical river ferry before dawn",
+          "prompt": "Place the approved fictional comic character at a misty historical river ferry before dawn, holding the worn suitcase close, with restrained dramatic tension and consistent ink-wash styling.",
+          "promptZh": "將核准的虛構漫畫人物置於黎明前的歷史渡口薄霧中，緊抱磨舊皮箱，以克制張力與一致水墨淡彩呈現分鏡畫面。",
+          "negativePrompt": "different person, identity drift, face morphing, photorealistic, live-action, photograph, 3d render, plastic skin, modern clothing, extra fingers, text, watermark",
+          "output": "images/comic/沈知微/07-cinematic-keyframe.png",
+          "status": "NOT_RUN",
+          "acceptance": [
+            "所有畫面可辨識為同一位人物。",
+            "臉部輪廓、髮型與畫風沒有漂移。",
+            "服裝、配件與身形比例保持連戲。"
+          ]
+        }
+      ]
+    }
+  ]
+}

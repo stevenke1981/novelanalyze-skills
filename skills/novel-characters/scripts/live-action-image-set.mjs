@@ -1,25 +1,30 @@
 #!/usr/bin/env node
-// Deterministic validator, auditor, and Markdown renderer for live-action image sets.
-// Node.js 18+; no third-party dependencies.
+// Deterministic validator, auditor, and Markdown renderer for visual image packs.
+// Supports live-action and comic sidecars. Node.js 18+; no third-party dependencies.
 
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { auditManifest } from './live-action/audit.mjs';
 import { renderMarkdown } from './live-action/renderer.mjs';
-import { LIVE_ACTION_VERSION, REQUIRED_SHOTS, slug } from './live-action/shared.mjs';
+import {
+  LIVE_ACTION_VERSION, REQUIRED_SHOTS, VISUAL_MODES, VISUAL_PACK_VERSION, getVisualMode, slug,
+} from './live-action/shared.mjs';
 import { validateManifest } from './live-action/validator.mjs';
 
-export { auditManifest, LIVE_ACTION_VERSION, renderMarkdown, REQUIRED_SHOTS, slug, validateManifest };
+export {
+  auditManifest, LIVE_ACTION_VERSION, REQUIRED_SHOTS, VISUAL_MODES, VISUAL_PACK_VERSION,
+  getVisualMode, renderMarkdown, slug, validateManifest,
+};
 
 const parseJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const usage = () => `Usage:
-  node live-action-image-set.mjs validate <live-action.json> [cast.json]
-  node live-action-image-set.mjs render <live-action.json> --md
-  node live-action-image-set.mjs audit <live-action.json> [base-directory] [cast.json]
+  node live-action-image-set.mjs validate <visual-pack.json> [cast.json]
+  node live-action-image-set.mjs render <visual-pack.json> --md
+  node live-action-image-set.mjs audit <visual-pack.json> [base-directory] [cast.json]
   node live-action-image-set.mjs slug <character-name>`;
 
-function runCli(argv) {
+export function runCli(argv) {
   const [command, input, ...rest] = argv;
   if (!command || command === '-h' || command === '--help') return console.log(usage());
   if (command === 'slug') {

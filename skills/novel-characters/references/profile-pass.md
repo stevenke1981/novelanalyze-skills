@@ -23,7 +23,7 @@
 
 8. **同一批角色之間要能區分開。** 會給你同批其他角色的名字，不要把他們的長相和聲線做成一個樣。
 
-9. **真人版設定另行建立。** 即使使用者要求真人版，也不要把本角色卡的卡通 `image.*` 欄位改成真人寫實，否則會破壞既有報告與工具相容性。先完成本角色卡與 `cast.json`，再依 `live-action-image-set.md` 與 `live-action-schema.md` 建立獨立 `<書名>-live-action.json`。
+9. **漫畫版與真人版設定另行建立。** 不要把本角色卡的卡通 `image.*` 欄位改成完整漫畫製作包或真人寫實，否則會破壞既有報告與工具相容性。先完成本角色卡與 `cast.json`，再依 `comic-image-set.md`、`comic-schema.md`、`live-action-image-set.md` 與 `live-action-schema.md` 同時建立獨立的 `<書名>-comic.json` 與 `<書名>-live-action.json`。
 
 ## 輸入格式
 

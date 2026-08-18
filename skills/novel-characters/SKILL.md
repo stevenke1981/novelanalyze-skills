@@ -1,6 +1,7 @@
 ---
 name: novel-characters
-description: 將小說或短篇故事整理成角色設定集，產出角色清單、人物分析、卡通形象提示詞、真人版圖片組設定、音色提示詞、JSON、Markdown 與離線 HTML 報告，並可在圖像工具可用時為主要角色製作三視圖與真人身份固定圖。當使用者要求拆解小說角色、分析人物、建立角色卡、角色聖經、配音設定、角色設計稿、真人化角色、電影化角色、角色身份固定圖，或從小說建立 character sheet 時使用。
+description: >-
+  將小說或短篇故事整理成角色設定集，產出角色清單、人物分析、卡通形象提示詞、漫畫版圖片組、真人版圖片組、音色提示詞、JSON、Markdown 與離線 HTML 報告，並可在圖像工具可用時為主要角色製作三視圖、漫畫身份固定圖與真人身份固定圖。當使用者要求拆解小說角色、分析人物、建立角色卡、角色聖經、配音設定、角色設計稿、漫畫化角色、真人化角色、電影化角色、角色身份固定圖，或從小說建立 character sheet 時使用。
 ---
 
 # 小說角色設定集
@@ -18,11 +19,16 @@ description: 將小說或短篇故事整理成角色設定集，產出角色清�
 - `report.html`：可離線開啟、搜尋、列印的完整報告。
 - `images/*-turnaround.png`：僅在圖像工具可用且實際生成成功時交付。
 
-當使用者要求真人版、寫實角色、電影化角色或角色身份固定圖片組時，另外交付：
+預設另外同時交付漫畫版與真人版圖片組：
 
+- `<書名>-comic.json`：漫畫身份鎖定、全案視覺聖經、七張必要圖片設定與逐張狀態。
+- `<書名>-comic.md`：漫畫圖片組製作版。
+- `images/comic/<slug>/*.png`：僅在實際生成並驗收成功時交付。
 - `<書名>-live-action.json`：真人身份鎖定、全案視覺聖經、七張必要圖片設定與逐張狀態。
 - `<書名>-live-action.md`：真人圖片組製作版。
 - `images/live-action/<slug>/*.png`：僅在實際生成並驗收成功時交付。
+
+只有使用者明確只要其中一種視覺版本時，才可省略另一種。
 
 人物分析與提示詞使用台灣繁體中文；英文提示詞欄位維持英文。`persona.evidence` 必須保留原文，無論原文使用哪一種語言或字體。
 
@@ -87,16 +93,16 @@ node "<SKILL_DIR>/scripts/novel-characters.mjs" validate "<書名>-cast.json" "<
 
 不得刪除引文或放寬驗證規則來換取通過。
 
-### 7. 建立真人版圖片組（按需求）
+### 7. 同時建立漫畫版與真人版圖片組
 
-只有使用者要求真人版、寫實、電影化、選角參考、角色身份固定或真人圖片組時執行。先讀取：
+預設同時建立兩種視覺 sidecar，不要互相覆寫，也不要改寫既有角色卡中的卡通 `image.prompt`。先讀取：
 
+- `references/comic-image-set.md`
+- `references/comic-schema.md`
 - `references/live-action-image-set.md`
 - `references/live-action-schema.md`
 
-不要改寫既有角色卡中的卡通 `image.prompt`；另建 `<書名>-live-action.json`，避免破壞舊資料與報告相容性。
-
-預設只處理 `protagonist` 與 `major`；使用者明確要求全部角色時才擴大。每位角色都必須有七張必要圖片設定：
+預設只處理 `protagonist` 與 `major`；使用者明確要求全部角色時才擴大。每位角色在每一種視覺版本裡都必須有七張必要圖片設定：
 
 1. `identity-board`
 2. `neutral-portrait`
@@ -106,9 +112,13 @@ node "<SKILL_DIR>/scripts/novel-characters.mjs" validate "<書名>-cast.json" "<
 6. `wardrobe-board`
 7. `cinematic-keyframe`
 
+漫畫版輸出到 `<書名>-comic.json` 與 `images/comic/<slug>/`；真人版輸出到 `<書名>-live-action.json` 與 `images/live-action/<slug>/`。兩份設定共用身份鎖定來源，但畫風、反向提示詞與產圖路徑必須分開。
+
 完成後執行：
 
 ```bash
+node "<SKILL_DIR>/scripts/comic-image-set.mjs" validate "<書名>-comic.json" "<書名>-cast.json"
+node "<SKILL_DIR>/scripts/comic-image-set.mjs" render "<書名>-comic.json" --md > "<書名>-comic.md"
 node "<SKILL_DIR>/scripts/live-action-image-set.mjs" validate "<書名>-live-action.json" "<書名>-cast.json"
 node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-action.json" --md > "<書名>-live-action.md"
 ```
@@ -126,18 +136,19 @@ node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-actio
 - 每位角色分開生成，成功後確認實際檔案位於 `images/<slug>-turnaround.png`。
 - 不得把「已送出生成」當成「已產生檔案」。
 
-### 9. 產生真人圖片組（選用）
+### 9. 產生漫畫與真人圖片組（選用）
 
-只有第 7 步已建立設定且目前環境有圖像工具時執行。
+只有第 7 步已建立設定且目前環境有圖像工具時執行。漫畫版與真人版分開產圖，不可混用參考圖。
 
-1. 每位角色先只生成 `identity-board`。
-2. 身份固定板未通過前，不得生成其餘六張。
+1. 每一種視覺版本、每位角色都先只生成該版本的 `identity-board`。
+2. 該版本身份固定板未通過前，不得生成其餘六張。
 3. 後續每張都以同一張核准身份固定板為最高優先參考；支援參考圖權重時設為高。
-4. 完成一張就檢查同一人、骨相、膚色、髮際線、身形、服裝與道具連戲，再更新 `status`。
+4. 完成一張就檢查同一人、輪廓、髮型、身形、服裝與道具連戲，再更新 `status`。
 5. `PASS` 只能用於存在、可開啟且通過驗收的 PNG；失敗用 `FAIL`，未執行用 `NOT_RUN`。
 6. 全部處理後執行：
 
 ```bash
+node "<SKILL_DIR>/scripts/comic-image-set.mjs" audit "<書名>-comic.json" "<輸出目錄>" "<書名>-cast.json"
 node "<SKILL_DIR>/scripts/live-action-image-set.mjs" audit "<書名>-live-action.json" "<輸出目錄>" "<書名>-cast.json"
 ```
 
@@ -145,7 +156,7 @@ node "<SKILL_DIR>/scripts/live-action-image-set.mjs" audit "<書名>-live-action
 
 ### 10. 產生角色報告
 
-先完成選用的三視圖與真人圖片組，再執行：
+先完成選用的三視圖、漫畫圖片組與真人圖片組，再執行：
 
 ```bash
 node "<SKILL_DIR>/scripts/novel-characters.mjs" render "<書名>-cast.json" --md > "<書名>-cast.md"
@@ -154,9 +165,10 @@ node "<SKILL_DIR>/scripts/novel-characters.mjs" render "<書名>-cast.json" --ht
 
 修改 HTML 樣式前先讀取 `references/report-style.md`，並保留離線、自包含、可搜尋、可列印、鍵盤焦點可見與減少動效等特性。
 
-若真人版設定有更新，最後再重跑真人版 Markdown：
+若漫畫版或真人版設定有更新，最後再重跑對應 Markdown：
 
 ```bash
+node "<SKILL_DIR>/scripts/comic-image-set.mjs" render "<書名>-comic.json" --md > "<書名>-comic.md"
 node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-action.json" --md > "<書名>-live-action.md"
 ```
 
@@ -168,8 +180,8 @@ node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-actio
 2. JSON 與 Markdown 可讀，角色數一致。
 3. `report.html` 可開啟，角色索引、複製按鈕與內容正常。
 4. 聲稱已生成的每張卡通三視圖都存在且可開啟。
-5. 有真人圖片組時，真人版 `validate` 與 `audit` 結束碼都為 0。
-6. 每張標示 `PASS` 的真人圖片都存在、可開啟，且與核准身份固定板為同一人。
+5. 漫畫版與真人版的 `validate` 與 `audit` 結束碼都為 0。
+6. 每張標示 `PASS` 的漫畫或真人圖片都存在、可開啟，且與該版本核准身份固定板為同一人。
 7. 若有截斷、跳過產圖、失敗角色或 `NOT_RUN` 圖片，最後明確列出。
 
 ## 邊界
@@ -177,7 +189,7 @@ node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-actio
 - 單次最多 24 個分塊，約 33 萬字元；超出時只分析已分塊範圍。
 - 分析欄位固定使用台灣繁體中文；逐字引文永遠保留原文。
 - 影像生成僅使用目前環境已提供的圖像工具，不自行要求或改用 `OPENAI_API_KEY`。
-- 真人身份固定不使用明星、演員或公眾人物相貌作捷徑。
+- 漫畫與真人身份固定都不使用明星、演員、公眾人物或既有 IP 角色相貌作捷徑。
 - 不在本技能內建立即時編輯器或長期資料庫。
 
 ## 自測
@@ -186,6 +198,7 @@ node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-actio
 
 ```bash
 node "<SKILL_DIR>/scripts/selftest.mjs"
+node "<SKILL_DIR>/scripts/comic-selftest.mjs"
 node "<SKILL_DIR>/scripts/live-action-selftest.mjs"
 ```
 
