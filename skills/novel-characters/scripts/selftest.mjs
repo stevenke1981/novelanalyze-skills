@@ -13,8 +13,10 @@ import { slug as sharedSlug } from './live-action/shared.mjs';
 import { entitiesToRoster } from './adapters/booknlp-to-roster.mjs';
 import { MIN_CJK_NAME_LENGTH } from './lib/names.mjs';
 import { detectChapters, partitionText } from './lib/parts.mjs';
+import { decodePngRgb, encodeSolidPng, readPngHeader } from './lib/png.mjs';
 import { harvestQuotes } from './lib/quotes.mjs';
 import { exportCastToTavernV2 } from './lib/tavern.mjs';
+import { buildVoicePreview } from './lib/voice-preview.mjs';
 import { CHUNK_SIZE, DEFAULT_TOP, MAX_CHUNKS, chunkText, chunkTextWithMeta, mergeRoster, renderHtml, renderMarkdown, selectRoster, slug, validateCast } from './novel-characters.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -137,6 +139,13 @@ const booknlpRoster = entitiesToRoster(
 eq(booknlpRoster.characters.length, 2, 'BookNLP 轉接器依 coref 聚成角色');
 ok(booknlpRoster.characters.some((entry) => entry.name === 'Alice' && entry.aliases.includes('Alice Liddel')), '專名聚類成 name/aliases');
 ok(!booknlpRoster.characters.some((entry) => entry.aliases.includes('she') || entry.name === 'she'), '代詞不進名單');
+
+const png = encodeSolidPng(16, 10, [12, 34, 56]);
+ok(readPngHeader(png)?.width === 16 && readPngHeader(png)?.height === 10, '可寫出可讀的 PNG 檔頭');
+ok(decodePngRgb(png)?.rgb[0] === 12, '可解出實心色 PNG');
+const preview = buildVoicePreview(DOC);
+ok(preview.characters.every((entry) => entry.status === 'NOT_RUN' && entry.durationHintSeconds === 5), '音色試聽預設 NOT_RUN 且 5 秒');
+ok(preview.characters.some((entry) => entry.name === '沈知微'), '音色試聽包含主角');
 
 /* ---------------- mergeRoster ---------------- */
 

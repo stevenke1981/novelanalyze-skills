@@ -67,6 +67,7 @@
   "identityLock": {},
   "performance": {},
   "wardrobe": {},
+  "states": [],
   "basePrompt": "A fictional nineteen-year-old Chinese student ...",
   "basePromptZh": "虛構的十九歲民國女學生……",
   "characterNegativePrompt": "glamorous makeup, modern hairstyle, identity drift ...",
@@ -125,6 +126,20 @@ node "<SKILL_DIR>/scripts/live-action-image-set.mjs" slug "<角色名>"
   "continuityNotes": "所有圖片維持相同衣領寬度、鈕扣數量……"
 }
 ```
+
+### `states`（可選）
+
+具名服裝／情緒／狀態版本。省略時所有圖片都視為基礎造型。若提供：
+
+| 欄位 | 說明 |
+| --- | --- |
+| `id` | 穩定短名，例如 `base`、`winter-coat`、`injured` |
+| `kind` | `wardrobe`、`expression` 或 `condition` |
+| `label` / `changes` | 台灣繁體中文；`changes` 必須寫清相對基礎狀態改了什麼 |
+| `parent` | 可選，必須指向已存在的 state |
+| `prompt` / `promptZh` | 與圖像提示詞相同的禁名規則 |
+
+單張圖片可加可選 `state` 對應這些 id。換裝、受傷或強烈表情必須另建狀態，不得靜默改 `identityLock`。情緒愈強，身份愈容易漂，不要承諾表情九宮格零漂移。
 
 ### 基礎提示詞
 

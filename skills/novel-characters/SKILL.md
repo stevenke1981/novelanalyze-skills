@@ -202,6 +202,15 @@ RP 卡可以使用角色名；圖像提示詞留在 `cast.json`，繼續禁人�
 
 時間線、關係、矛盾與伏筆不要寫進本技能。改用兄弟技能 `novel-bible`。
 
+可選產圖輔助：
+
+```bash
+node "<SKILL_DIR>/scripts/comic-image-set.mjs" compose-sequence "<書名>-comic.json"
+node "<SKILL_DIR>/scripts/novel-characters.mjs" voice-preview "<書名>-cast.json" --out voice-preview.json
+```
+
+先讀 `references/sequence-generation.md`、`references/optional-ip-adapter.md` 與 `references/voice-preview.md`。這些都不是安裝依賴。
+
 ### 12. 驗收
 
 實際確認：
@@ -211,7 +220,7 @@ RP 卡可以使用角色名；圖像提示詞留在 `cast.json`，繼續禁人�
 3. `report.html` 可開啟，角色索引、複製按鈕與內容正常。
 4. 聲稱已生成的每張卡通三視圖都存在且可開啟。
 5. 漫畫版與真人版的 `validate` 與 `audit` 結束碼都為 0。
-6. 每張標示 `PASS` 的漫畫或真人圖片都存在、可開啟，且與該版本核准身份固定板為同一人。
+6. 每張標示 `PASS` 的漫畫或真人圖片都存在、是有效 PNG、比例正確，且身份雜湊未明顯偏離該版本核准身份固定板。
 7. 若有截斷、跳過產圖、失敗角色或 `NOT_RUN` 圖片，最後明確列出。
 
 ## 邊界

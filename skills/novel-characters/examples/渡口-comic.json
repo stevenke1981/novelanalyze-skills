@@ -98,6 +98,25 @@
         ],
         "continuityNotes": "所有圖片維持相同衣領寬度、鈕扣數量、裙長、辮繩位置、皮箱刮痕與磨損方向。"
       },
+      "states": [
+        {
+          "id": "base",
+          "kind": "wardrobe",
+          "label": "藏青學生裝",
+          "changes": "基礎造型，臉、辮型與藏青學生裝都不變。",
+          "prompt": "The same fictional student wearing the approved navy school tunic, cream collar, faded red braid cords, and battered brown suitcase.",
+          "promptZh": "同一位虛構女學生穿著核准的藏青學生裝、米白衣領、褪色紅辮繩與磨舊棕皮箱。"
+        },
+        {
+          "id": "injured",
+          "kind": "condition",
+          "label": "指節擦傷",
+          "parent": "base",
+          "changes": "只增加指節擦傷，臉型與服裝版型不變。",
+          "prompt": "The same fictional student with a small fresh scrape on the knuckles only, identity and costume otherwise unchanged.",
+          "promptZh": "同一位虛構女學生只有指節多了一處新擦傷，其餘身份與服裝不變。"
+        }
+      ],
       "basePrompt": "A fictional nineteen-year-old Chinese student from the 1930s drawn as a hand-drawn ink-wash comic character, slender build with slightly inward shoulders, narrow oval face, deep brown wary eyes, fine straight nose, naturally thin lips, pale wash skin, centre-parted black hair in two long braids tied with faded red cord, wearing a worn navy student tunic with a plain cream collar and carrying a battered brown leather suitcase.",
       "basePromptZh": "虛構的十九歲民國女學生，以水墨淡彩漫畫繪成，身形單薄、肩膀微內收，窄鵝蛋臉、深褐警覺眼睛、纖細平直鼻形、自然偏薄嘴唇，偏白淡彩膚色；中央分線黑髮編成兩條長辮，辮梢繫褪色紅繩，穿磨舊藏青學生裝配米白衣領，攜帶棕色舊皮箱。",
       "characterNegativePrompt": "photorealistic, live-action, photograph, mature glamorous face, heavy makeup, modern haircut, loose hair, different braid length, different eye spacing, wide jaw, altered nose profile, 3d render, luxury costume, modern suitcase, identity drift",

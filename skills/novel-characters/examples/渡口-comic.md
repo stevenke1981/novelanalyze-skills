@@ -59,6 +59,11 @@ A fictional nineteen-year-old Chinese student from the 1930s drawn as a hand-dra
 photorealistic, live-action, photograph, mature glamorous face, heavy makeup, modern haircut, loose hair, different braid length, different eye spacing, wide jaw, altered nose profile, 3d render, luxury costume, modern suitcase, identity drift
 ```
 
+### 具名狀態
+
+- **藏青學生裝**（`base`／wardrobe）：基礎造型，臉、辮型與藏青學生裝都不變。
+- **指節擦傷**（`injured`／condition／繼承 base）：只增加指節擦傷，臉型與服裝版型不變。
+
 ### 圖片組
 
 #### 漫畫角色身份固定參考圖表 · `identity-board`

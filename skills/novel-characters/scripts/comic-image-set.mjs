@@ -11,6 +11,7 @@ export {
   VISUAL_MODES,
   VISUAL_PACK_VERSION,
   auditManifest,
+  composeSequence,
   getVisualMode,
   renderMarkdown,
   runCli,

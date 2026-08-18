@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.0 — 2026-08-18
+
+- `audit` 對 `PASS` 檢查有效 PNG、長寬比，並可選比對 identity-board 平均雜湊；假文字檔不能再過關。
+- 視覺角色可選 `states`（wardrobe／expression／condition），禁止靜默改身份。
+- 新增 `compose-sequence` 與 `sequence-generation.md`，七張圖可當一致序列配方。
+- 新增 `optional-ip-adapter.md` 外部食譜，不引入擴散模型依賴。
+- 新增 `voice-preview` 與 `voice-preview.md`：5 秒試聽清單，不阻擋角色卡驗證。
+
 ## 1.5.0 — 2026-08-18
 
 - `chunk --chapters`／`--parts N`：長篇按章回或容量分段，每段各自最多 24 塊，並寫 `parts.json`。

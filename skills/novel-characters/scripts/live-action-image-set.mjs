@@ -5,6 +5,8 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { isMainModule } from './lib/main.mjs';
+import { DEFAULT_MAX_DISTANCE } from './lib/identity-score.mjs';
+import { composeSequence } from './lib/sequence.mjs';
 import { auditManifest } from './live-action/audit.mjs';
 import { renderMarkdown } from './live-action/renderer.mjs';
 import {
@@ -13,7 +15,7 @@ import {
 import { validateManifest } from './live-action/validator.mjs';
 
 export {
-  auditManifest, LIVE_ACTION_VERSION, REQUIRED_SHOTS, VISUAL_MODES, VISUAL_PACK_VERSION,
+  auditManifest, composeSequence, LIVE_ACTION_VERSION, REQUIRED_SHOTS, VISUAL_MODES, VISUAL_PACK_VERSION,
   getVisualMode, renderMarkdown, slug, validateManifest,
 };
 
@@ -22,7 +24,12 @@ const usage = () => `Usage:
   node live-action-image-set.mjs validate <visual-pack.json> [cast.json]
   node live-action-image-set.mjs render <visual-pack.json> --md
   node live-action-image-set.mjs audit <visual-pack.json> [base-directory] [cast.json]
-  node live-action-image-set.mjs slug <character-name>`;
+  node live-action-image-set.mjs compose-sequence <visual-pack.json> [--character <name>]
+  node live-action-image-set.mjs slug <character-name>
+
+audit 選項：
+  --no-identity-score   只檢查 PNG 檔頭與比例，不比對 identity-board 雜湊
+  --max-distance <n>    身份雜湊最大漢明距離（預設 ${DEFAULT_MAX_DISTANCE}）`;
 
 export function runCli(argv) {
   const [command, input, ...rest] = argv;
@@ -53,11 +60,24 @@ export function runCli(argv) {
     return process.stdout.write(renderMarkdown(manifest));
   }
 
+  if (command === 'compose-sequence') {
+    const nameIndex = rest.indexOf('--character');
+    const characterName = nameIndex >= 0 ? rest[nameIndex + 1] : null;
+    const sequence = composeSequence(manifest, characterName);
+    if (characterName && !sequence.length) throw new Error(`找不到角色：${characterName}`);
+    return process.stdout.write(`${JSON.stringify({ source: manifest.source, mode: manifest.mode, characters: sequence }, null, 2)}\n`);
+  }
+
   if (command === 'audit') {
-    const baseDirectory = rest[0] && !rest[0].endsWith('.json') ? rest[0] : dirname(manifestPath);
-    const castPath = rest.find((item) => item.endsWith('.json'));
+    const positional = rest.filter((item, index, all) => !String(item).startsWith('-') && all[index - 1] !== '--max-distance');
+    const baseDirectory = positional[0] && !positional[0].endsWith('.json') ? positional[0] : dirname(manifestPath);
+    const castPath = positional.find((item) => item.endsWith('.json'));
     const cast = castPath ? parseJson(resolve(castPath)) : null;
-    const problems = auditManifest(manifest, baseDirectory, cast);
+    const maxIndex = rest.indexOf('--max-distance');
+    const problems = auditManifest(manifest, baseDirectory, cast, {
+      scoreIdentity: !rest.includes('--no-identity-score'),
+      maxDistance: maxIndex >= 0 ? Number(rest[maxIndex + 1]) : DEFAULT_MAX_DISTANCE,
+    });
     if (problems.length) {
       for (const problem of problems) console.error(`- ${problem}`);
       process.exitCode = 1;

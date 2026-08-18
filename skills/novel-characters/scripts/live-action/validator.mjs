@@ -1,7 +1,7 @@
 import {
   ASPECT_RATIOS, CAPTURE_STRING_FIELDS, IDENTITY_STRING_FIELDS, IMPORTANCE,
   LIVE_ACTION_VERSION, PERFORMANCE_STRING_FIELDS, REQUIRED_SHOTS, SCOPE,
-  SHOT_STRING_FIELDS, STATUS, STYLE_STRING_FIELDS, asStringArray, checkEnglish,
+  SHOT_STRING_FIELDS, STATE_KINDS, STATUS, STYLE_STRING_FIELDS, asStringArray, checkEnglish,
   checkPromptNames, checkZhTw, collectForbiddenNames, getVisualMode, isNonEmptyString, isPlainObject, keyOf, mapCast,
   requireStringArray, requireStrings, slug,
 } from './shared.mjs';
@@ -156,6 +156,8 @@ function validateCharacter(
     ['characterNegativePrompt', character?.characterNegativePrompt],
   ]) checkPromptNames(value, `${label}.${field}`, names, problems);
 
+  const stateIds = validateStates(character?.states, label, names, problems);
+
   if (!Array.isArray(character?.shots)) {
     problems.push(`${label}.shots 必須是陣列`);
     return;
@@ -163,7 +165,7 @@ function validateCharacter(
 
   const shotIds = new Set();
   for (const [shotIndex, shot] of character.shots.entries()) {
-    validateShot(shot, shotIndex, character, visualMode, label, names, shotIds, seenOutputs, problems);
+    validateShot(shot, shotIndex, character, visualMode, label, names, shotIds, seenOutputs, problems, stateIds);
   }
 
   for (const required of REQUIRED_SHOTS) {
@@ -177,7 +179,40 @@ function validateCharacter(
   }
 }
 
-function validateShot(shot, shotIndex, character, visualMode, label, names, shotIds, seenOutputs, problems) {
+function validateStates(states, label, names, problems) {
+  const ids = new Set();
+  if (states == null) return ids;
+  if (!Array.isArray(states)) {
+    problems.push(`${label}.states 必須是陣列`);
+    return ids;
+  }
+  for (const [index, state] of states.entries()) {
+    const stateLabel = `${label}.states[${index}]`;
+    if (!isNonEmptyString(state?.id)) problems.push(`${stateLabel}.id 缺失或為空`);
+    else if (ids.has(state.id)) problems.push(`${stateLabel}.id 重複：${state.id}`);
+    else ids.add(state.id);
+    if (!STATE_KINDS.has(state?.kind)) problems.push(`${stateLabel}.kind 必須是 wardrobe/expression/condition`);
+    if (!isNonEmptyString(state?.label)) problems.push(`${stateLabel}.label 缺失或為空`);
+    else checkZhTw(state.label, `${stateLabel}.label`, problems);
+    if (state?.parent != null && state.parent !== '' && typeof state.parent !== 'string') {
+      problems.push(`${stateLabel}.parent 必須是既有 state id 或省略`);
+    }
+    if (!isNonEmptyString(state?.changes)) problems.push(`${stateLabel}.changes 缺失或為空`);
+    else checkZhTw(state.changes, `${stateLabel}.changes`, problems);
+    checkEnglish(state?.prompt, `${stateLabel}.prompt`, problems);
+    checkZhTw(state?.promptZh, `${stateLabel}.promptZh`, problems);
+    checkPromptNames(state?.prompt, `${stateLabel}.prompt`, names, problems);
+    checkPromptNames(state?.promptZh, `${stateLabel}.promptZh`, names, problems);
+  }
+  for (const [index, state] of states.entries()) {
+    if (state?.parent && !ids.has(state.parent)) {
+      problems.push(`${label}.states[${index}].parent 找不到：${state.parent}`);
+    }
+  }
+  return ids;
+}
+
+function validateShot(shot, shotIndex, character, visualMode, label, names, shotIds, seenOutputs, problems, stateIds = new Set()) {
   const shotLabel = `${label}.shots[${shotIndex}]`;
   requireStrings(shot, SHOT_STRING_FIELDS, shotLabel, problems);
   if (!isPlainObject(shot)) return;
@@ -208,4 +243,8 @@ function validateShot(shot, shotIndex, character, visualMode, label, names, shot
   }
   if (seenOutputs.has(shot.output)) problems.push(`${shotLabel}.output 與其他圖片重複：${shot.output}`);
   seenOutputs.add(shot.output);
+  if (shot.state != null && shot.state !== '') {
+    if (!isNonEmptyString(shot.state)) problems.push(`${shotLabel}.state 必須是 state id`);
+    else if (stateIds.size && !stateIds.has(shot.state)) problems.push(`${shotLabel}.state 找不到：${shot.state}`);
+  }
 }

@@ -5,6 +5,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { encodeSolidPng } from './lib/png.mjs';
 import {
   auditManifest,
   renderMarkdown,
@@ -67,6 +68,9 @@ assert.deepEqual(validateManifest(fixture, cast), [], 'bundled live-action fixtu
     const absolute = resolve(root, shot.output);
     mkdirSync(dirname(absolute), { recursive: true });
     writeFileSync(absolute, 'not-empty');
+    problems = auditManifest(audited, root, cast);
+    assert.ok(problems.some((problem) => problem.includes('不是有效 PNG')));
+    writeFileSync(absolute, encodeSolidPng(32, 20, [40, 80, 40]));
     problems = auditManifest(audited, root, cast);
     assert.deepEqual(problems, []);
   } finally {

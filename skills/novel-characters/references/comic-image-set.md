@@ -90,3 +90,5 @@ node "<SKILL_DIR>/scripts/comic-image-set.mjs" audit "<書名>-comic.json" "<輸
 5. 是否有多手指、肢體融合、文字碎片、浮水印或突然變成真人照片。
 
 `identity-board` 未通過時，後續圖片一律不可開始。單張失敗不阻斷文字成果，但最終必須清楚列出 `FAIL` 與 `NOT_RUN`。
+
+`audit` 對 `PASS` 會檢查：檔案存在、非空、是有效 PNG、長寬比符合該張 `aspectRatio`，並在可解碼時把後續圖與 `identity-board` 做平均雜湊比對。純文字假檔不能再標 `PASS`。可選序列生成見 `sequence-generation.md`；參考圖模型見 `optional-ip-adapter.md`。

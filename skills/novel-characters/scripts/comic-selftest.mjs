@@ -5,8 +5,10 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { encodeCheckerPng, encodeSolidPng } from './lib/png.mjs';
 import {
   auditManifest,
+  composeSequence,
   renderMarkdown,
   validateManifest,
 } from './comic-image-set.mjs';
@@ -78,10 +80,40 @@ assert.deepEqual(validateManifest(liveAction, cast), [], 'live-action fixture mu
     mkdirSync(dirname(absolute), { recursive: true });
     writeFileSync(absolute, 'not-empty');
     problems = auditManifest(audited, root, cast);
+    assert.ok(problems.some((problem) => problem.includes('不是有效 PNG')));
+
+    writeFileSync(absolute, encodeSolidPng(32, 20, [180, 40, 40]));
+    problems = auditManifest(audited, root, cast);
     assert.deepEqual(problems, []);
+
+    writeFileSync(absolute, encodeSolidPng(20, 32, [180, 40, 40]));
+    problems = auditManifest(audited, root, cast);
+    assert.ok(problems.some((problem) => problem.includes('比例不符')));
+
+    const face = audited.characters[0].shots.find((item) => item.id === 'face-angles');
+    face.status = 'PASS';
+    const facePath = resolve(root, face.output);
+    mkdirSync(dirname(facePath), { recursive: true });
+    writeFileSync(absolute, encodeCheckerPng(32, 20, [220, 40, 40], [40, 40, 40]));
+    writeFileSync(facePath, encodeCheckerPng(32, 20, [40, 40, 220], [220, 220, 40]));
+    problems = auditManifest(audited, root, cast);
+    assert.ok(problems.some((problem) => problem.includes('身份分數過低')));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+}
+
+{
+  const broken = clone(fixture);
+  broken.characters[0].states[1].parent = 'missing';
+  assert.ok(validateManifest(broken, cast).some((problem) => problem.includes('parent 找不到')));
+}
+
+{
+  const sequence = composeSequence(fixture, '沈知微');
+  assert.equal(sequence.length, 1);
+  assert.equal(sequence[0].shots.length, 7);
+  assert.match(sequence[0].shots[0].prompt, /approved identity-board/);
 }
 
 console.log('comic selftest: PASS');

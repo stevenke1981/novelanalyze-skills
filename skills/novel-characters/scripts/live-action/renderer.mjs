@@ -28,11 +28,19 @@ export function renderMarkdown(manifest) {
     lines.push('', `**必須保持：** ${character.identityLock.mustRemain.join('、')}`, '',
       `**禁止出現：** ${character.identityLock.mustNotAppear.join('、')}`, '',
       `### ${mode.basePromptHeading}`, markdownCode(character.basePrompt),
-      '### 角色反向提示詞', markdownCode(character.characterNegativePrompt), '### 圖片組', '');
+      '### 角色反向提示詞', markdownCode(character.characterNegativePrompt));
+    if (Array.isArray(character.states) && character.states.length) {
+      lines.push('### 具名狀態', '');
+      for (const state of character.states) {
+        lines.push(`- **${state.label}**（\`${state.id}\`／${state.kind}${state.parent ? `／繼承 ${state.parent}` : ''}）：${state.changes}`);
+      }
+      lines.push('');
+    }
+    lines.push('### 圖片組', '');
 
     for (const shot of character.shots) {
       lines.push(`#### ${shot.title} · \`${shot.id}\``, '',
-        `- 比例：${shot.aspectRatio}`, `- 輸出：\`${shot.output}\``, `- 狀態：${shot.status}`,
+        `- 比例：${shot.aspectRatio}`, `- 輸出：\`${shot.output}\``, `- 狀態：${shot.status}${shot.state ? `　- 版本：\`${shot.state}\`` : ''}`,
         `- 鏡頭：${shot.camera}`, `- 光線：${shot.lighting}`, `- 背景：${shot.background}`, '',
         '**英文提示詞**', markdownCode(shot.prompt), '**中文提示詞**', markdownCode(shot.promptZh),
         '**反向提示詞**', markdownCode(shot.negativePrompt), '**驗收**', '',

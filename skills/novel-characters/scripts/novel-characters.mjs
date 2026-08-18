@@ -11,8 +11,9 @@ import { effectiveChunkCapacity, planHierarchicalChunks } from './lib/parts.mjs'
 import { harvestQuotes } from './lib/quotes.mjs';
 import { slug } from './lib/slug.mjs';
 import { exportCastToTavernV2 } from './lib/tavern.mjs';
+import { buildVoicePreview } from './lib/voice-preview.mjs';
 
-export { harvestQuotes, planHierarchicalChunks, exportCastToTavernV2 };
+export { harvestQuotes, planHierarchicalChunks, exportCastToTavernV2, buildVoicePreview };
 
 /* ------------------------------------------------------------------ */
 /* chunk                                                               */
@@ -883,6 +884,7 @@ const USAGE = `novel-characters.mjs — novel-characters skill 的確定性工�
   harvest-quotes <book.txt> <roster.json>
                                    依名稱／別名從原文抽出逐字引文候選
   export-card <cast.json>          匯出角色卡；目前支援 --format tavern-v2
+  voice-preview <cast.json>        產出主角／主要角色 5 秒音色試聽清單，不驗證音檔
   validate <cast.json> <book.txt>  驗證；有違規逐條列印並 exit 1
   render <cast.json> [--html|--md] 渲染報告到 stdout（預設 --md）
   slug <name>                      角色名轉安全檔名
@@ -901,6 +903,9 @@ harvest-quotes 選項：
 export-card 選項：
   --format tavern-v2
   --out <dir>       每位角色寫一個 JSON；RP 卡可用人名，圖像提示詞不匯出
+
+voice-preview 選項：
+  --out <file>      寫出 JSON 清單；沒有音檔不得把角色卡 validate 當成通過
 
 validate 選項：
   --denylist <file> 額外禁用詞，一行一詞，# 開頭為註解
@@ -1106,6 +1111,21 @@ function main(argv) {
       return fileName;
     });
     console.log(JSON.stringify({ format, count: written.length, out: resolvedOut, files: written }, null, 2));
+    return;
+  }
+
+  if (cmd === 'voice-preview') {
+    const [castPath] = positionalArgs(rest, ['--out']);
+    if (!castPath) throw new Error('用法：voice-preview <cast.json> [--out file]');
+    const preview = buildVoicePreview(readJson(castPath));
+    const json = `${JSON.stringify(preview, null, 2)}\n`;
+    const outPath = takeFlag(rest, '--out');
+    if (outPath) {
+      writeFileSync(resolve(outPath), json, 'utf8');
+      console.log(JSON.stringify({ count: preview.characters.length, out: resolve(outPath) }, null, 2));
+      return;
+    }
+    process.stdout.write(json);
     return;
   }
 

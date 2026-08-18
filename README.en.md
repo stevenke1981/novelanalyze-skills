@@ -53,6 +53,8 @@ node skills/novel-characters/scripts/novel-characters.mjs chunk book.txt workdir
 node skills/novel-characters/scripts/novel-characters.mjs select roster-merged.json --top 10
 node skills/novel-characters/scripts/novel-characters.mjs harvest-quotes book.txt roster-merged.json
 node skills/novel-characters/scripts/novel-characters.mjs export-card cast.json --format tavern-v2 --out cards
+node skills/novel-characters/scripts/comic-image-set.mjs compose-sequence book-comic.json
+node skills/novel-characters/scripts/novel-characters.mjs voice-preview cast.json --out voice-preview.json
 node skills/novel-bible/scripts/novel-bible.mjs validate book-bible.json book.txt cast.json
 node skills/novel-characters/scripts/novel-characters.mjs validate cast.json book.txt
 node skills/novel-characters/scripts/novel-characters.mjs validate cast.json book.txt --denylist denylist.txt

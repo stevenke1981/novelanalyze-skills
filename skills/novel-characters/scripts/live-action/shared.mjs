@@ -56,6 +56,7 @@ export const IMPORTANCE = new Set(['protagonist', 'major', 'supporting', 'minor'
 export const STATUS = new Set(['NOT_RUN', 'PASS', 'FAIL']);
 export const SCOPE = new Set(['main', 'all', 'custom']);
 export const ASPECT_RATIOS = new Set(['1:1', '3:2', '2:3', '4:5', '5:4', '16:9', '16:10', '9:16']);
+export const STATE_KINDS = new Set(['wardrobe', 'expression', 'condition']);
 export const IDENTITY_STRING_FIELDS = [
   'agePresentation', 'genderPresentation', 'ancestryAndRegion', 'faceGeometry', 'eyes', 'brows',
   'nose', 'mouth', 'skin', 'hair', 'body',
