@@ -2,8 +2,7 @@
 // Thin alias for the shared visual-pack CLI. Accepts mode=comic manifests.
 // Node.js 18+; no third-party dependencies.
 
-import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from './lib/main.mjs';
 import { runCli } from './live-action-image-set.mjs';
 
 export {
@@ -19,8 +18,7 @@ export {
   validateManifest,
 } from './live-action-image-set.mjs';
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
-if (isMain) {
+if (isMainModule(import.meta.url)) {
   try {
     runCli(process.argv.slice(2));
   } catch (error) {

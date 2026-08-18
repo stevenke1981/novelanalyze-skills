@@ -22,4 +22,12 @@ work written for this project and is covered by the same license.
 
 Taiwan Traditional Chinese derivative changes, Windows/OpenCode installation,
 validation hardening, and CI integration are maintained at:
-https://github.com/stevenke1981/shuohao-skills-zh-tw
+https://github.com/stevenke1981/novelanalyze-skills
+
+The original project name was shuohao-skills. Historical mirrors may still
+refer to stevenke1981/shuohao-skills-zh-tw; that is not the current repository
+name.
+
+The excerpts under `evals/fixtures/` are public-domain literary texts
+(Tao Yuanming, "桃花源記"; Lewis Carroll, *Alice's Adventures in Wonderland*,
+1865) used only as deterministic evaluation fixtures.

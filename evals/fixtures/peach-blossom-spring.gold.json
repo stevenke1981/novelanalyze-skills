@@ -1,0 +1,25 @@
+{
+  "id": "peach-blossom-spring",
+  "source": "桃花源記",
+  "author": "陶淵明",
+  "public_domain": true,
+  "language": "zh",
+  "truncated_expected": false,
+  "characters": [
+    {
+      "name": "漁人",
+      "aliases": ["武陵人"],
+      "quotes": ["漁人甚異之。", "不足為外人道也。"]
+    },
+    {
+      "name": "太守",
+      "aliases": [],
+      "quotes": ["太守即遣人隨其往"]
+    },
+    {
+      "name": "劉子驥",
+      "aliases": [],
+      "quotes": ["南陽劉子驥，高尚士也"]
+    }
+  ]
+}

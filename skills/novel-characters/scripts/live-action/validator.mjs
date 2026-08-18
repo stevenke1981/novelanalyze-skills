@@ -2,8 +2,8 @@ import {
   ASPECT_RATIOS, CAPTURE_STRING_FIELDS, IDENTITY_STRING_FIELDS, IMPORTANCE,
   LIVE_ACTION_VERSION, PERFORMANCE_STRING_FIELDS, REQUIRED_SHOTS, SCOPE,
   SHOT_STRING_FIELDS, STATUS, STYLE_STRING_FIELDS, asStringArray, checkEnglish,
-  checkPromptNames, checkZhTw, getVisualMode, isNonEmptyString, isPlainObject, keyOf, mapCast,
-  requireStringArray, requireStrings, slug, unique,
+  checkPromptNames, checkZhTw, collectForbiddenNames, getVisualMode, isNonEmptyString, isPlainObject, keyOf, mapCast,
+  requireStringArray, requireStrings, slug,
 } from './shared.mjs';
 
 export function validateManifest(manifest, cast = null) {
@@ -50,7 +50,16 @@ export function validateManifest(manifest, cast = null) {
   const seenOutputs = new Set();
 
   for (const [characterIndex, character] of manifest.characters.entries()) {
-    validateCharacter(character, characterIndex, visualMode, castByName, seenCharacters, seenOutputs, problems);
+    validateCharacter(
+      character,
+      characterIndex,
+      visualMode,
+      castByName,
+      seenCharacters,
+      seenOutputs,
+      problems,
+      { source: manifest.source, author: manifest.author ?? cast?.author },
+    );
   }
 
   if (cast && Array.isArray(cast.characters)) {
@@ -70,7 +79,16 @@ export function validateManifest(manifest, cast = null) {
   return problems;
 }
 
-function validateCharacter(character, characterIndex, visualMode, castByName, seenCharacters, seenOutputs, problems) {
+function validateCharacter(
+  character,
+  characterIndex,
+  visualMode,
+  castByName,
+  seenCharacters,
+  seenOutputs,
+  problems,
+  workIdentity = {},
+) {
   const prefix = `characters[${characterIndex}]`;
   const name = character?.name ?? '(無名)';
   const label = `${prefix}(${name})`;
@@ -123,7 +141,12 @@ function validateCharacter(character, characterIndex, visualMode, castByName, se
     requireStringArray(wardrobe.materials, `${label}.wardrobe.materials`, problems, 1);
   }
 
-  const names = unique([character?.name, ...(character?.aliases ?? [])].filter(isNonEmptyString));
+  const names = collectForbiddenNames({
+    name: character?.name,
+    aliases: character?.aliases,
+    source: workIdentity.source,
+    author: workIdentity.author,
+  });
   checkEnglish(character?.basePrompt, `${label}.basePrompt`, problems);
   checkZhTw(character?.basePromptZh, `${label}.basePromptZh`, problems);
   checkEnglish(character?.characterNegativePrompt, `${label}.characterNegativePrompt`, problems);

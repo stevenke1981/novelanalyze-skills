@@ -239,7 +239,7 @@
           "lighting": "Soft ink-wash atmosphere with readable silhouette",
           "background": "Misty historical river ferry before dawn",
           "prompt": "Place the approved fictional comic character at a misty historical river ferry before dawn, holding the worn suitcase close, with restrained dramatic tension and consistent ink-wash styling.",
-          "promptZh": "將核准的虛構漫畫人物置於黎明前的歷史渡口薄霧中，緊抱磨舊皮箱，以克制張力與一致水墨淡彩呈現分鏡畫面。",
+          "promptZh": "將核准的虛構漫畫人物置於黎明前的歷史渡頭薄霧中，緊抱磨舊皮箱，以克制張力與一致水墨淡彩呈現分鏡畫面。",
           "negativePrompt": "different person, identity drift, face morphing, photorealistic, live-action, photograph, 3d render, plastic skin, modern clothing, extra fingers, text, watermark",
           "output": "images/comic/沈知微/07-cinematic-keyframe.png",
           "status": "NOT_RUN",

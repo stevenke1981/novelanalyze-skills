@@ -1,0 +1,20 @@
+{
+  "id": "alice-excerpt",
+  "source": "Alice's Adventures in Wonderland",
+  "author": "Lewis Carroll",
+  "public_domain": true,
+  "language": "en",
+  "truncated_expected": false,
+  "characters": [
+    {
+      "name": "Alice",
+      "aliases": [],
+      "quotes": ["and what is the use of a book,"]
+    },
+    {
+      "name": "White Rabbit",
+      "aliases": ["Rabbit"],
+      "quotes": ["Oh dear! Oh dear! I shall be late!"]
+    }
+  ]
+}

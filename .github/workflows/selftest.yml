@@ -29,6 +29,8 @@ jobs:
         run: node skills/novel-characters/scripts/comic-selftest.mjs
       - name: Run live-action self-test
         run: node skills/novel-characters/scripts/live-action-selftest.mjs
+      - name: Run deterministic evals
+        run: node evals/eval.mjs
       - name: Validate bundled fixture
         run: node skills/novel-characters/scripts/novel-characters.mjs validate skills/novel-characters/examples/渡口-cast.json skills/novel-characters/examples/渡口.txt
       - name: Validate comic fixture
@@ -41,6 +43,9 @@ jobs:
       - name: Render live-action fixture
         shell: bash
         run: node skills/novel-characters/scripts/live-action-image-set.mjs render skills/novel-characters/examples/渡口-live-action.json --md > live-action-fixture.md
+      - name: Render HTML fixture
+        shell: bash
+        run: node skills/novel-characters/scripts/novel-characters.mjs render skills/novel-characters/examples/渡口-cast.json --html > report-fixture.html
       - name: Test PowerShell installer
         if: runner.os == 'Windows' && matrix.node == 22
         shell: pwsh

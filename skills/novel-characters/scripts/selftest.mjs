@@ -9,7 +9,9 @@ import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { CHUNK_SIZE, MAX_CHUNKS, chunkText, chunkTextWithMeta, mergeRoster, renderHtml, renderMarkdown, slug, validateCast } from './novel-characters.mjs';
+import { slug as sharedSlug } from './live-action/shared.mjs';
+import { MIN_CJK_NAME_LENGTH } from './lib/names.mjs';
+import { CHUNK_SIZE, DEFAULT_TOP, MAX_CHUNKS, chunkText, chunkTextWithMeta, mergeRoster, renderHtml, renderMarkdown, selectRoster, slug, validateCast } from './novel-characters.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const skillRoot = join(here, '..');
@@ -140,6 +142,7 @@ eq(mergeRoster([[{ note: '沒名字' }]]).length, 0, '沒有 name 的條目被�
 
 /* ---------------- slug ---------------- */
 
+eq(slug('胡二爺'), sharedSlug('胡二爺'), 'cast 與 visual-pack 共用同一套 slug');
 eq(slug('胡二爺'), '胡二爺', '中文名原樣保留');
 ok(/^a-b-c-d--[0-9a-f]{8}$/.test(slug('a/b:c*d')), '路徑危險字元被替換並附穩定雜湊');
 eq(slug('  x  '), 'x', '兩端空白被去掉');
@@ -165,11 +168,11 @@ ok(hits(bad, '逐字片段') > 0, '抓住意譯的引文');
 
 bad = clone();
 bad[0].image.prompt = `${bad[0].name}, ${bad[0].image.prompt}`;
-ok(hits(bad, '人名') > 0, '抓住出圖提示詞裡的人名');
+ok(hits(bad, '角色名') > 0, '抓住出圖提示詞裡的人名');
 
 bad = clone();
 bad[0].image.promptZh = `${bad[0].aliases[0]}的設定圖`;
-ok(hits(bad, '人名') > 0, '抓住中文出圖提示詞裡的別名');
+ok(hits(bad, '別名') > 0, '抓住中文出圖提示詞裡的別名');
 
 bad = clone();
 bad[0].voice.timbre = 'warm husky alto';
@@ -245,13 +248,74 @@ bad = clone();
 bad[0].name = 'Alice';
 bad[0].aliases = [];
 bad[0].image.negativePrompt = 'ALICE, blur';
-ok(hits(bad, 'image.negativePrompt 裡出現了人名') > 0, '反向提示詞也會以不分大小寫方式檢查人名洩漏');
+ok(hits(bad, 'image.negativePrompt 裡出現了角色名') > 0, '反向提示詞也會以不分大小寫方式檢查人名洩漏');
 
 bad = clone();
 bad[0].name = 'Li';
 bad[0].aliases = [];
 bad[0].image.prompt = 'A slim figure with cinematic lighting in a clean lineup';
-eq(hits(bad, '人名'), 0, '短拉丁姓名不會誤判 slim、lighting 或 lineup');
+eq(hits(bad, '角色名'), 0, '短拉丁姓名不會誤判 slim、lighting 或 lineup');
+
+bad = clone();
+bad[0].aliases = ['周'];
+bad[0].image.promptZh = '一位周正的中年船伕立於薄霧中';
+eq(
+  validateCast(bad, SOURCE).filter((p) => p.includes('別名「周」')).length,
+  0,
+  `少於 ${MIN_CJK_NAME_LENGTH} 字的中文別名不檢查，避免誤傷普通詞`,
+);
+
+bad = clone();
+bad[0].image.promptZh = `${bad[0].image.promptZh} 出自渡口。`;
+ok(
+  validateCast(bad, SOURCE, { source: '渡口' }).some((p) => p.includes('書名「渡口」')),
+  '抓住出圖提示詞裡的書名',
+);
+
+bad = clone();
+bad[0].image.prompt = `${bad[0].image.prompt} by Tao Yuanming`;
+ok(
+  validateCast(bad, SOURCE, { author: 'Tao Yuanming' }).some((p) => p.includes('作者名「Tao Yuanming」')),
+  '抓住出圖提示詞裡的作者名',
+);
+
+bad = clone();
+bad[0].image.negativePrompt = `${bad[0].image.negativePrompt}, celebrity face`;
+ok(
+  validateCast(bad, SOURCE, { extraNames: ['celebrity face'] }).some((p) => p.includes('禁用詞「celebrity face」')),
+  '抓住 denylist 禁用詞',
+);
+
+/* ---------------- selectRoster ---------------- */
+
+const rankedRoster = [
+  { name: '乙', aliases: ['阿乙'] },
+  { name: '甲', aliases: [] },
+  { name: '丙', aliases: [] },
+];
+eq(selectRoster(rankedRoster).length, 3, '少於預設上限時全收');
+eq(selectRoster(rankedRoster, { top: 2 }).map((c) => c.name).join(','), '乙,甲', 'top N 依既有排序切片');
+eq(selectRoster({ characters: rankedRoster }, { top: 1 })[0].name, '乙', '也接受 {characters} 包一層');
+eq(selectRoster(rankedRoster, { names: ['阿乙', '丙'] }).map((c) => c.name).join(','), '乙,丙', 'names 可用別名且忽略 top');
+eq(selectRoster([]).length, 0, '空名單回傳空陣列');
+eq(DEFAULT_TOP, 10, '預設選角人數仍是 10');
+assert.throws(() => selectRoster(rankedRoster, { top: 0 }), /正整數/, 'top 必須是正整數');
+assert.throws(() => selectRoster(rankedRoster, { names: ['不存在'] }), /找不到指定角色/, '指定名單找不到就失敗');
+passed += 2;
+
+const selectWorkdir = mkdtempSync(join(tmpdir(), 'novel-characters-select-'));
+try {
+  const rosterPath = join(selectWorkdir, 'roster.json');
+  writeFileSync(rosterPath, JSON.stringify(rankedRoster));
+  const selectCli = spawnSync(process.execPath, [join(here, 'novel-characters.mjs'), 'select', rosterPath, '--top', '2'], { encoding: 'utf8' });
+  eq(selectCli.status, 0, 'select CLI --top 成功');
+  eq(JSON.parse(selectCli.stdout).map((c) => c.name).join(','), '乙,甲', 'select CLI 輸出前兩名');
+  const namedCli = spawnSync(process.execPath, [join(here, 'novel-characters.mjs'), 'select', rosterPath, '--names', '丙,阿乙'], { encoding: 'utf8' });
+  eq(namedCli.status, 0, 'select CLI --names 成功');
+  eq(JSON.parse(namedCli.stdout).map((c) => c.name).join(','), '丙,乙', '--names 依指定順序');
+} finally {
+  rmSync(selectWorkdir, { recursive: true, force: true });
+}
 
 // 沒有原文時應該跳過逐字驗證而不是全判失敗
 eq(validateCast(CAST, null).length, 0, '不給原文時跳過引文驗證');

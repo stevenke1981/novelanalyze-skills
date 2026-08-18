@@ -239,7 +239,7 @@
           "lighting": "Soft motivated daylight with neutral skin exposure",
           "background": "Misty historical river ferry before dawn",
           "prompt": "Place the approved fictional person at a misty historical river ferry before dawn, holding the worn suitcase close, with motivated soft daylight and restrained dramatic tension.",
-          "promptZh": "將核准的虛構人物置於黎明前的歷史渡口薄霧中，緊抱磨舊皮箱，以有動機的柔光呈現克制張力。",
+          "promptZh": "將核准的虛構人物置於黎明前的歷史渡頭薄霧中，緊抱磨舊皮箱，以有動機的柔光呈現克制張力。",
           "negativePrompt": "different person, identity drift, face morphing, illustration, anime, 3d render, plastic skin, beauty retouching, modern clothing, extra fingers, text, watermark",
           "output": "images/live-action/沈知微/07-cinematic-keyframe.png",
           "status": "NOT_RUN",

@@ -125,7 +125,7 @@ foreach ($target in $targets) {
         $fileCount = Assert-TreeParity -Source $source -Destination $destination
         New-Item -ItemType Directory -Path $markerRoot -Force | Out-Null
         [pscustomobject]@{
-            repository = 'stevenke1981/shuohao-skills-zh-tw'
+            repository = 'stevenke1981/novelanalyze-skills'
             skill = $name
             source = $source
             installed_at = [DateTimeOffset]::Now.ToString('o')

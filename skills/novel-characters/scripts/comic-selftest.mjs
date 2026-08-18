@@ -34,7 +34,14 @@ assert.deepEqual(validateManifest(liveAction, cast), [], 'live-action fixture mu
   const broken = clone(fixture);
   broken.characters[0].shots[0].promptZh += ' 沈知微。';
   const problems = validateManifest(broken, cast);
-  assert.ok(problems.some((problem) => problem.includes('不得包含角色名或別名')));
+  assert.ok(problems.some((problem) => problem.includes('不得包含角色名：沈知微')));
+}
+
+{
+  const broken = clone(fixture);
+  broken.characters[0].shots[0].promptZh += ' 渡口。';
+  const problems = validateManifest(broken, cast);
+  assert.ok(problems.some((problem) => problem.includes('不得包含書名：渡口')));
 }
 
 {

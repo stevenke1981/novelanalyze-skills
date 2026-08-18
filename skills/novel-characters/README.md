@@ -61,7 +61,7 @@ OpenCode 可完整執行角色分析、驗證與報告產生；若目前環境�
 | 規則 | 目的 |
 | --- | --- |
 | `persona.evidence` 必須是原文中的連續逐字片段 | 防止虛構或拼接引文 |
-| 卡通、漫畫與真人影像提示詞不得出現角色名稱或別名 | 避免模型被名稱記憶與既有 IP 偏誤影響 |
+| 卡通、漫畫與真人影像提示詞不得出現角色名稱、別名、書名或作者名 | 避免模型被名稱記憶與既有 IP 偏誤影響。單字中文名稱不檢查 |
 | 分析欄位使用台灣繁體中文，模型提示詞依欄位使用英文 | 維持穩定、可重用的輸出格式 |
 | `importance` 僅接受四種列舉值 | 保護資料結構相容性 |
 | 漫畫版與真人版七張必要圖片、固定比例與輸出路徑必須完整 | 確保能直接交給製作流程 |
@@ -74,7 +74,10 @@ OpenCode 可完整執行角色分析、驗證與報告產生；若目前環境�
 ```bash
 node scripts/novel-characters.mjs chunk book.txt workdir
 node scripts/novel-characters.mjs merge workdir
+node scripts/novel-characters.mjs select roster-merged.json --top 10
+node scripts/novel-characters.mjs select roster-merged.json --names 沈知微,老周
 node scripts/novel-characters.mjs validate cast.json book.txt
+node scripts/novel-characters.mjs validate cast.json book.txt --denylist references/denylist.example.txt
 node scripts/novel-characters.mjs render cast.json --html
 node scripts/novel-characters.mjs slug "胡二爺"
 
@@ -100,6 +103,7 @@ node scripts/live-action-image-set.mjs slug "胡二爺"
 node scripts/selftest.mjs
 node scripts/comic-selftest.mjs
 node scripts/live-action-selftest.mjs
+node ../../../evals/eval.mjs
 ```
 
-自測涵蓋分塊、別名合併、資料驗證、台灣繁體中文檢查、Markdown／HTML 渲染、漫畫與真人身份設定、必要圖片、人名洩漏與圖片檔案稽核；不呼叫模型，也不消耗模型額度。
+自測涵蓋分塊、別名合併、選角、資料驗證、台灣繁體中文檢查、Markdown／HTML 渲染、漫畫與真人身份設定、必要圖片、名稱洩漏與圖片檔案稽核；不呼叫模型，也不消耗模型額度。`evals/eval.mjs` 另外檢查公開領域夾具的引文對齊與截斷標記。

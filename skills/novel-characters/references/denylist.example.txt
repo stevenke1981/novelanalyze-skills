@@ -1,0 +1,7 @@
+# Optional extra terms banned from image prompts.
+# One term per line. Lines starting with # are comments.
+# Do not ship a celebrity or living-person list in the skill.
+#
+# Example:
+# OpenAI
+# Star Wars

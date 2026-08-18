@@ -4,7 +4,7 @@
 
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from './lib/main.mjs';
 import { auditManifest } from './live-action/audit.mjs';
 import { renderMarkdown } from './live-action/renderer.mjs';
 import {
@@ -68,8 +68,7 @@ export function runCli(argv) {
   throw new Error(`未知指令：${command}\n${usage()}`);
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
-if (isMain) {
+if (isMainModule(import.meta.url)) {
   try {
     runCli(process.argv.slice(2));
   } catch (error) {

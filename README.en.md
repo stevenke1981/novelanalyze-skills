@@ -14,6 +14,14 @@ Self-contained fiction-analysis skills for AI coding agents. The repository curr
 
 ## Install
 
+Agent skills directory (Codex, OpenCode, or Claude Code):
+
+```bash
+npx skills add stevenke1981/novelanalyze-skills
+```
+
+This installs `novel-characters` into the current agent's skills folder. Use the installers below when you want SHA-256 tree verification on Windows or symlink updates on macOS and Linux.
+
 Windows:
 
 ```powershell
@@ -41,7 +49,9 @@ $novel-characters Analyze ./my-novel.txt and write the character bible plus comi
 Deterministic commands:
 
 ```bash
+node skills/novel-characters/scripts/novel-characters.mjs select roster-merged.json --top 10
 node skills/novel-characters/scripts/novel-characters.mjs validate cast.json book.txt
+node skills/novel-characters/scripts/novel-characters.mjs validate cast.json book.txt --denylist denylist.txt
 node skills/novel-characters/scripts/novel-characters.mjs render cast.json --html > report.html
 node skills/novel-characters/scripts/comic-image-set.mjs validate book-comic.json cast.json
 node skills/novel-characters/scripts/comic-image-set.mjs render book-comic.json --md > book-comic.md
@@ -63,6 +73,7 @@ node skills/novel-characters/scripts/live-action-image-set.mjs audit book-live-a
 node skills/novel-characters/scripts/selftest.mjs
 node skills/novel-characters/scripts/comic-selftest.mjs
 node skills/novel-characters/scripts/live-action-selftest.mjs
+node evals/eval.mjs
 node skills/novel-characters/scripts/novel-characters.mjs validate skills/novel-characters/examples/渡口-cast.json skills/novel-characters/examples/渡口.txt
 node skills/novel-characters/scripts/comic-image-set.mjs validate skills/novel-characters/examples/渡口-comic.json skills/novel-characters/examples/渡口-cast.json
 node skills/novel-characters/scripts/live-action-image-set.mjs validate skills/novel-characters/examples/渡口-live-action.json skills/novel-characters/examples/渡口-cast.json

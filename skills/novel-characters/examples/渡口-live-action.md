@@ -277,7 +277,7 @@ Place the approved fictional person at a misty historical river ferry before daw
 **中文提示詞**
 
 ```text
-將核准的虛構人物置於黎明前的歷史渡口薄霧中，緊抱磨舊皮箱，以有動機的柔光呈現克制張力。
+將核准的虛構人物置於黎明前的歷史渡頭薄霧中，緊抱磨舊皮箱，以有動機的柔光呈現克制張力。
 ```
 
 **反向提示詞**

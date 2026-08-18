@@ -1,5 +1,15 @@
 # Changelog
 
+## novel-characters 1.4.0 — 2026-08-18
+
+- 文件新增 `npx skills add stevenke1981/novelanalyze-skills`，與既有 SHA-256／symlink 安裝器並存。
+- `NOTICE` 與 Windows 安裝標記改回目前儲存庫名 `stevenke1981/novelanalyze-skills`。
+- `slug()` 與名稱檢查改為共用模組；漫畫／真人 CLI 改用 `realpathSync` 判斷進入點。
+- 圖像提示詞禁用檢查擴充到書名 `source`、可選 `author` 與 `--denylist`；少於 2 字的中文名稱仍不檢查。
+- 新增 `select --top N`／`--names`，把預設前 10 名做成確定性指令。
+- 新增 `evals/` 公開領域夾具與不呼叫模型的評測腳本。
+- GitHub Actions 增加 HTML 渲染煙霧測試與 evals。
+
 ## novel-characters 1.3.0 — 2026-08-18
 
 - 預設同時產出漫畫版與真人版圖片組 sidecar，不再把漫畫製作包只留在角色卡卡通欄位。

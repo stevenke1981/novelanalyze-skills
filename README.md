@@ -20,6 +20,14 @@
 
 ## 安裝
 
+### 技能目錄（Codex／OpenCode／Claude Code）
+
+```bash
+npx skills add stevenke1981/novelanalyze-skills
+```
+
+這會把 `novel-characters` 裝進目前代理的 skills 目錄。若要 SHA-256 完整性校驗（Windows 複製）或符號連結（macOS／Linux），改用下面的安裝器。
+
 ### Windows：Codex 與 OpenCode
 
 ```powershell
@@ -60,7 +68,9 @@ $novel-characters 請分析 ./我的小說.txt，輸出角色設定、漫畫版�
 也可以直接使用確定性工具：
 
 ```powershell
+node .\skills\novel-characters\scripts\novel-characters.mjs select .\roster-merged.json --top 10
 node .\skills\novel-characters\scripts\novel-characters.mjs validate .\cast.json .\book.txt
+node .\skills\novel-characters\scripts\novel-characters.mjs validate .\cast.json .\book.txt --denylist .\denylist.txt
 node .\skills\novel-characters\scripts\novel-characters.mjs render .\cast.json --html > report.html
 node .\skills\novel-characters\scripts\comic-image-set.mjs validate .\book-comic.json .\cast.json
 node .\skills\novel-characters\scripts\comic-image-set.mjs render .\book-comic.json --md > book-comic.md
@@ -84,6 +94,7 @@ node .\skills\novel-characters\scripts\live-action-image-set.mjs audit .\book-li
 node .\skills\novel-characters\scripts\selftest.mjs
 node .\skills\novel-characters\scripts\comic-selftest.mjs
 node .\skills\novel-characters\scripts\live-action-selftest.mjs
+node .\evals\eval.mjs
 node .\skills\novel-characters\scripts\novel-characters.mjs validate .\skills\novel-characters\examples\渡口-cast.json .\skills\novel-characters\examples\渡口.txt
 node .\skills\novel-characters\scripts\comic-image-set.mjs validate .\skills\novel-characters\examples\渡口-comic.json .\skills\novel-characters\examples\渡口-cast.json
 node .\skills\novel-characters\scripts\live-action-image-set.mjs validate .\skills\novel-characters\examples\渡口-live-action.json .\skills\novel-characters\examples\渡口-cast.json

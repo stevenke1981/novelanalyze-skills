@@ -63,9 +63,10 @@ node "<SKILL_DIR>/scripts/novel-characters.mjs" chunk "<book.txt>" "<workdir>"
 
 ```bash
 node "<SKILL_DIR>/scripts/novel-characters.mjs" merge "<workdir>" > "<workdir>/roster-merged.json"
+node "<SKILL_DIR>/scripts/novel-characters.mjs" select "<workdir>/roster-merged.json" --top 10 > "<workdir>/roster-selected.json"
 ```
 
-依名稱與別名合併同一角色，並依出現分塊數排序。預設為前 10 位；使用者指定數量時以使用者要求為準。最後回報尚未製作完整角色卡的人數。
+依名稱與別名合併同一角色，並依出現分塊數排序。再用 `select` 切片；預設前 10 位。使用者指定數量時改 `--top N`，指定名單時用 `--names 沈知微,老周`（此時忽略 `--top`）。不要只在心裡切前 10 名。最後回報尚未製作完整角色卡的人數。
 
 ### 5. 建立角色卡與故事摘要
 
@@ -89,7 +90,7 @@ node "<SKILL_DIR>/scripts/novel-characters.mjs" merge "<workdir>" > "<workdir>/r
 node "<SKILL_DIR>/scripts/novel-characters.mjs" validate "<書名>-cast.json" "<book.txt>"
 ```
 
-驗證結構、角色重要度列舉、逐字引文、影像提示詞中的人名洩漏、欄位語言分工，以及應使用台灣繁體中文的分析欄位。有錯誤時逐項修正並重跑，直到結束碼為 0。
+驗證結構、角色重要度列舉、逐字引文、影像提示詞中的名稱洩漏（角色名、別名、`source` 書名、可選 `author`、以及 `--denylist`）、欄位語言分工，以及應使用台灣繁體中文的分析欄位。少於兩個字的中文名稱／別名不檢查，避免誤傷普通詞。有錯誤時逐項修正並重跑，直到結束碼為 0。
 
 不得刪除引文或放寬驗證規則來換取通過。
 
@@ -123,7 +124,7 @@ node "<SKILL_DIR>/scripts/live-action-image-set.mjs" validate "<書名>-live-act
 node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-action.json" --md > "<書名>-live-action.md"
 ```
 
-英文與中文圖像提示詞都不得出現角色名、別名、作品名、作者名、演員名、明星名或公眾人物名。
+英文與中文圖像提示詞都不得出現角色名、別名、作品名、作者名、演員名、明星名或公眾人物名。驗證器會檢查角色名、別名、`source` 與 `author`；演員／明星請放到可選的 denylist 檔，不要把巨大詞表寫進技能。
 
 ### 8. 產生卡通三視圖（選用）
 
@@ -202,4 +203,4 @@ node "<SKILL_DIR>/scripts/comic-selftest.mjs"
 node "<SKILL_DIR>/scripts/live-action-selftest.mjs"
 ```
 
-自測不得呼叫模型或消耗模型額度。
+若在儲存庫根目錄，另外執行 `node evals/eval.mjs`。自測與 evals 都不得呼叫模型或消耗模型額度。

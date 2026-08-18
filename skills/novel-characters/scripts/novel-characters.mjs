@@ -3,10 +3,11 @@
 // Zero dependencies on purpose: the skill must work in any directory
 // without an npm install. Node 18+ (stdlib only).
 
-import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from './lib/main.mjs';
+import { collectForbiddenNames, containsName, describeForbiddenHit, loadDenylist } from './lib/names.mjs';
+import { slug } from './lib/slug.mjs';
 
 /* ------------------------------------------------------------------ */
 /* chunk                                                               */
@@ -142,24 +143,52 @@ export function mergeRoster(batches) {
   return result.sort((a, b) => b._chunkIds.size - a._chunkIds.size);
 }
 
-/* ------------------------------------------------------------------ */
-/* slug                                                                */
-/* ------------------------------------------------------------------ */
+export { slug };
 
-/** Filesystem-safe stem for a character name, CJK preserved. */
-export function slug(name) {
-  const raw = String(name).trim().normalize('NFC');
-  if (!raw) return 'character';
-  let cleaned = raw
-    .replace(/[\u0000-\u001F\u007F\s/\\:*?"<>|]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/[. ]+$/g, '');
-  if (/^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?$/i.test(cleaned)) cleaned = `character-${cleaned}`;
-  if (Array.from(cleaned).length > 80) cleaned = Array.from(cleaned).slice(0, 80).join('');
-  const base = cleaned || 'character';
-  if (base === raw) return base;
-  const suffix = createHash('sha256').update(raw).digest('hex').slice(0, 8);
-  return `${base}--${suffix}`;
+export const DEFAULT_TOP = 10;
+
+const rosterKey = (value) => String(value ?? '').trim().toLowerCase();
+
+function rosterEntries(value) {
+  if (Array.isArray(value)) return value;
+  if (value && Array.isArray(value.characters)) return value.characters;
+  throw new Error('select 輸入必須是角色陣列或含 characters 陣列的 JSON');
+}
+
+/**
+ * Keep the already-ranked merge output. Does not assign importance.
+ * --names is an explicit allow-list and wins over --top.
+ */
+export function selectRoster(input, options = {}) {
+  const entries = rosterEntries(input);
+  if (!entries.length) return [];
+
+  const named = Array.isArray(options.names)
+    ? options.names.map((name) => String(name).trim()).filter(Boolean)
+    : [];
+  if (named.length) {
+    const selected = [];
+    const seen = new Set();
+    for (const wanted of named) {
+      const key = rosterKey(wanted);
+      const match = entries.find((entry) => {
+        const candidates = [entry?.name, ...(Array.isArray(entry?.aliases) ? entry.aliases : [])]
+          .map(rosterKey)
+          .filter(Boolean);
+        return candidates.includes(key);
+      });
+      if (!match) throw new Error(`找不到指定角色：${wanted}`);
+      const id = rosterKey(match.name);
+      if (seen.has(id)) continue;
+      seen.add(id);
+      selected.push(match);
+    }
+    return selected;
+  }
+
+  const top = options.top === undefined ? DEFAULT_TOP : Number(options.top);
+  if (!Number.isInteger(top) || top < 1) throw new Error('--top 必須是正整數');
+  return entries.slice(0, top);
 }
 
 /* ------------------------------------------------------------------ */
@@ -182,7 +211,6 @@ const IMAGE_MUST_BE_EN = ['style', 'prompt', 'negativePrompt', 'turnaround'];
 const VOICE_MUST_BE_EN = ['prompt'];
 
 const normaliseLineEndings = (s) => String(s).replace(/\r\n?/g, '\n');
-const compactForNameCheck = (s) => String(s).normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, '');
 const looksChinese = (s) => {
   const value = String(s);
   if (/[぀-ヿ가-힯]/.test(value)) return false;
@@ -190,19 +218,7 @@ const looksChinese = (s) => {
   const latinCount = (value.match(/[A-Za-z]/g) ?? []).length;
   return hanCount > 0 && latinCount <= Math.max(6, hanCount);
 };
-const containsCharacterName = (value, candidate) => {
-  const source = String(value).normalize('NFKC');
-  const name = String(candidate).trim().normalize('NFKC');
-  if (!name) return false;
-  if (/^[A-Za-z0-9]+(?:\s+[A-Za-z0-9]+)*$/.test(name)) {
-    const escaped = name.split(/\s+/).map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+');
-    return new RegExp(`(?:^|[^A-Za-z0-9])${escaped}(?=$|[^A-Za-z0-9])`, 'i').test(source);
-  }
-  if (Array.from(name).length < 2) return false;
-  return compactForNameCheck(source).includes(compactForNameCheck(name));
-};
-
-export function validateCast(characters, sourceText) {
+export function validateCast(characters, sourceText, options = {}) {
   const problems = [];
   const normalisedSource = sourceText === null ? null : normaliseLineEndings(sourceText);
   const at = (name, msg) => problems.push(`[${name}] ${msg}`);
@@ -325,14 +341,20 @@ export function validateCast(characters, sourceText) {
 
     // --- no name leakage into image prompts ---
     if (image) {
-      const names = [c?.name, ...(Array.isArray(c?.aliases) ? c.aliases : [])].filter(
-        (n) => typeof n === 'string' && n.trim(),
-      );
+      const forbidden = collectForbiddenNames({
+        name: c?.name,
+        aliases: c?.aliases,
+        source: options.source,
+        author: options.author,
+        extra: options.extraNames,
+      });
       for (const field of ['prompt', 'promptZh', 'negativePrompt', 'turnaround']) {
         const value = image[field];
         if (typeof value !== 'string') continue;
-        for (const n of names) {
-          if (containsCharacterName(value, n)) at(name, `image.${field} 裡出現了人名「${n}」`);
+        for (const entry of forbidden) {
+          if (containsName(value, entry.value)) {
+            at(name, `image.${field} 裡出現了${describeForbiddenHit(entry)}「${entry.value}」`);
+          }
         }
       }
     }
@@ -851,10 +873,18 @@ document.addEventListener('click', async (e) => {
 const USAGE = `novel-characters.mjs — novel-characters skill 的確定性工具
 
   chunk <book.txt> <workdir>       段落感知重疊切塊，寫 chunk-NN.txt，列印塊數
-  merge <workdir>                  合併 roster-*.json，列印 cast JSON
+  merge <workdir>                  合併 roster-*.json，列印已排序角色 JSON
+  select <roster.json>             從 merge 結果選角，預設前 ${DEFAULT_TOP} 名
   validate <cast.json> <book.txt>  驗證；有違規逐條列印並 exit 1
   render <cast.json> [--html|--md] 渲染報告到 stdout（預設 --md）
   slug <name>                      角色名轉安全檔名
+
+select 選項：
+  --top <n>         取前 n 名（預設 ${DEFAULT_TOP}）。假設輸入已依戲份排序
+  --names a,b       依名稱或別名顯式選角；若出現則忽略 --top
+
+validate 選項：
+  --denylist <file> 額外禁用詞，一行一詞，# 開頭為註解
 
 render 選項：
   --source <name>   報告標題用的書名（預設取 cast.json 的 source 或檔名）
@@ -872,8 +902,23 @@ function loadCast(path) {
   return {
     characters,
     source: Array.isArray(raw) ? null : raw.source,
+    author: Array.isArray(raw) ? null : raw.author,
     summary: Array.isArray(raw) ? '' : (raw.summary ?? ''),
   };
+}
+
+function takeFlag(args, name) {
+  const index = args.indexOf(name);
+  if (index < 0) return null;
+  return args[index + 1] ?? null;
+}
+
+function parseNameList(value) {
+  if (value == null || value === '') return [];
+  return String(value)
+    .split(/[,，]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function main(argv) {
@@ -925,13 +970,28 @@ function main(argv) {
     return;
   }
 
+  if (cmd === 'select') {
+    const [rosterPath] = rest;
+    if (!rosterPath || rosterPath.startsWith('-')) throw new Error('用法：select <roster.json> [--top n] [--names a,b]');
+    const names = parseNameList(takeFlag(rest, '--names'));
+    const topFlag = takeFlag(rest, '--top');
+    const selected = selectRoster(readJson(rosterPath), {
+      names,
+      top: topFlag == null ? DEFAULT_TOP : Number(topFlag),
+    });
+    console.log(JSON.stringify(selected, null, 2));
+    return;
+  }
+
   if (cmd === 'validate') {
-    const [castPath, bookPath] = rest;
-    if (!castPath) throw new Error('用法：validate <cast.json> <book.txt>');
-    const { characters, summary } = loadCast(castPath);
+    const [castPath, bookPath] = rest.filter((item) => !item.startsWith('-') && rest[rest.indexOf(item) - 1] !== '--denylist');
+    if (!castPath) throw new Error('用法：validate <cast.json> <book.txt> [--denylist file]');
+    const { characters, source: workTitle, author, summary } = loadCast(castPath);
     const source = bookPath ? readFileSync(resolve(bookPath), 'utf8') : null;
     if (!bookPath) console.error('⚠️ 沒給原文，跳過逐字引文驗證');
-    const problems = validateCast(characters, source);
+    const denylistPath = takeFlag(rest, '--denylist');
+    const extraNames = denylistPath ? loadDenylist(readFileSync(resolve(denylistPath), 'utf8')) : [];
+    const problems = validateCast(characters, source, { source: workTitle, author, extraNames });
     // 頂層的故事摘要——報告要用，缺了就無法在頂部交代背景
     if (typeof summary !== 'string' || !summary.trim()) {
       problems.unshift('頂層缺少 summary（故事摘要），報告頂部會空著');
@@ -986,18 +1046,7 @@ function main(argv) {
 }
 
 // 只有直接執行才跑 CLI —— selftest.mjs 需要 import 這些函式。
-// 兩邊都取 realpath：符號連結安裝時 argv[1] 是連結路徑，而 import.meta.url
-// 已被 Node 解析成真實路徑，不歸一化就永遠不相等。
-function isMainModule() {
-  if (!process.argv[1]) return false;
-  try {
-    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
-  } catch {
-    return false;
-  }
-}
-
-if (isMainModule()) {
+if (isMainModule(import.meta.url)) {
   try {
     main(process.argv.slice(2));
   } catch (error) {

@@ -1,4 +1,7 @@
-import { createHash } from 'node:crypto';
+import { containsName, collectForbiddenNames, describeForbiddenHit } from '../lib/names.mjs';
+import { slug } from '../lib/slug.mjs';
+
+export { slug, containsName, collectForbiddenNames };
 
 export const VISUAL_PACK_VERSION = '1.0';
 export const LIVE_ACTION_VERSION = VISUAL_PACK_VERSION;
@@ -70,26 +73,12 @@ const HAN = /[㐀-鿿]/;
 const SIMPLIFIED_CHINESE = /[这们为发说国过还进关门间图视质体现实声语线并计设备转录应从对会无长经动样书车马风电头话亲该结构认读写听觉给仅让带难义远处级选删导侧页汇总标]/;
 
 export const keyOf = (value) => String(value ?? '').trim().normalize('NFKC').toLocaleLowerCase();
-const compact = (value) => keyOf(value).replace(/\s+/g, '');
 export const isNonEmptyString = (value) => typeof value === 'string' && value.trim().length > 0;
 export const isPlainObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 export const asStringArray = (value) => (Array.isArray(value) ? value : []);
 export const unique = (values) => [...new Set(values)];
 
-export function slug(name) {
-  const raw = String(name ?? '').trim().normalize('NFC');
-  if (!raw) return 'character';
-  let cleaned = raw
-    .replace(/[\u0000-\u001F\u007F\s/\\:*?"<>|]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/[. ]+$/g, '');
-  if (/^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?$/i.test(cleaned)) cleaned = `character-${cleaned}`;
-  if (Array.from(cleaned).length > 80) cleaned = Array.from(cleaned).slice(0, 80).join('');
-  const base = cleaned || 'character';
-  if (base === raw) return base;
-  const suffix = createHash('sha256').update(raw).digest('hex').slice(0, 8);
-  return `${base}--${suffix}`;
-}
+
 
 export function looksEnglish(value) {
   return isNonEmptyString(value) && /[A-Za-z]/.test(value) && !CJK.test(value);
@@ -101,20 +90,7 @@ export function looksTraditionalChinese(value) {
   return !SIMPLIFIED_CHINESE.test(value);
 }
 
-export function containsName(value, name) {
-  const source = String(value ?? '').normalize('NFKC');
-  const candidate = String(name ?? '').trim().normalize('NFKC');
-  if (!candidate) return false;
-  if (/^[A-Za-z0-9]+(?:\s+[A-Za-z0-9]+)*$/.test(candidate)) {
-    const escaped = candidate
-      .split(/\s+/)
-      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-      .join('\\s+');
-    return new RegExp(`(?:^|[^A-Za-z0-9])${escaped}(?=$|[^A-Za-z0-9])`, 'i').test(source);
-  }
-  if (Array.from(candidate).length < 2) return false;
-  return compact(source).includes(compact(candidate));
-}
+
 
 export function requireStrings(object, fields, label, problems) {
   if (!isPlainObject(object)) {
@@ -146,8 +122,11 @@ export function checkZhTw(value, label, problems) {
 }
 
 export function checkPromptNames(value, label, names, problems) {
-  for (const name of names) {
-    if (containsName(value, name)) problems.push(`${label} 不得包含角色名或別名：${name}`);
+  for (const entry of names ?? []) {
+    const item = typeof entry === 'string' ? { value: entry, kind: 'name' } : entry;
+    if (containsName(value, item.value)) {
+      problems.push(`${label} 不得包含${describeForbiddenHit(item)}：${item.value}`);
+    }
   }
 }
 

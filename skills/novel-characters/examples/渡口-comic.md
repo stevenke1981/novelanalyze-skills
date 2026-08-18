@@ -277,7 +277,7 @@ Place the approved fictional comic character at a misty historical river ferry b
 **中文提示詞**
 
 ```text
-將核准的虛構漫畫人物置於黎明前的歷史渡口薄霧中，緊抱磨舊皮箱，以克制張力與一致水墨淡彩呈現分鏡畫面。
+將核准的虛構漫畫人物置於黎明前的歷史渡頭薄霧中，緊抱磨舊皮箱，以克制張力與一致水墨淡彩呈現分鏡畫面。
 ```
 
 **反向提示詞**
