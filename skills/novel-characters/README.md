@@ -73,7 +73,10 @@ OpenCode 可完整執行角色分析、驗證與報告產生；若目前環境�
 
 ```bash
 node scripts/novel-characters.mjs chunk book.txt workdir
+node scripts/novel-characters.mjs chunk book.txt workdir --chapters
 node scripts/novel-characters.mjs merge workdir
+node scripts/novel-characters.mjs harvest-quotes book.txt roster-merged.json
+node scripts/novel-characters.mjs export-card cast.json --format tavern-v2 --out cards
 node scripts/novel-characters.mjs select roster-merged.json --top 10
 node scripts/novel-characters.mjs select roster-merged.json --names 沈知微,老周
 node scripts/novel-characters.mjs validate cast.json book.txt
@@ -92,7 +95,7 @@ node scripts/live-action-image-set.mjs slug "胡二爺"
 
 ## 限制
 
-- 單次最多 24 個分塊，約 33 萬字元；超出時會回報 `truncated: true`。
+- 單段最多 24 個分塊，約 33 萬字元；長篇請用 `--chapters` 或 `--parts N`。超出該段容量時會回報該段 `truncated: true`。
 - 預設只為 `protagonist` 與 `major` 建立三視圖、漫畫圖片組與真人圖片組。
 - 角色分開產圖時仍可能發生身份或畫風漂移；漫畫與真人模式都必須先核准各自的 `identity-board`，並作為其他圖片的主參考。
 - 沒有圖像工具時不會產生 PNG，但 JSON、Markdown、HTML、三視圖提示詞與兩套圖片組設定仍可正常交付。

@@ -2,7 +2,7 @@
 
 # novelanalyze-skills
 
-Self-contained fiction-analysis skills for AI coding agents. The repository currently ships `novel-characters`, which turns prose into a production-ready character bible for character design, voice design, comic production, live-action casting references, and visual production.
+Self-contained fiction-analysis skills for AI coding agents. The repository currently ships `novel-characters` and `novel-bible`: the first turns prose into a production-ready character pack, and the second adds a source-grounded timeline and relationship bible.
 
 ## Capabilities
 
@@ -20,7 +20,7 @@ Agent skills directory (Codex, OpenCode, or Claude Code):
 npx skills add stevenke1981/novelanalyze-skills
 ```
 
-This installs `novel-characters` into the current agent's skills folder. Use the installers below when you want SHA-256 tree verification on Windows or symlink updates on macOS and Linux.
+This installs `novel-characters` and `novel-bible` into the current agent's skills folder. Use the installers below when you want SHA-256 tree verification on Windows or symlink updates on macOS and Linux.
 
 Windows:
 
@@ -49,7 +49,11 @@ $novel-characters Analyze ./my-novel.txt and write the character bible plus comi
 Deterministic commands:
 
 ```bash
+node skills/novel-characters/scripts/novel-characters.mjs chunk book.txt workdir --chapters
 node skills/novel-characters/scripts/novel-characters.mjs select roster-merged.json --top 10
+node skills/novel-characters/scripts/novel-characters.mjs harvest-quotes book.txt roster-merged.json
+node skills/novel-characters/scripts/novel-characters.mjs export-card cast.json --format tavern-v2 --out cards
+node skills/novel-bible/scripts/novel-bible.mjs validate book-bible.json book.txt cast.json
 node skills/novel-characters/scripts/novel-characters.mjs validate cast.json book.txt
 node skills/novel-characters/scripts/novel-characters.mjs validate cast.json book.txt --denylist denylist.txt
 node skills/novel-characters/scripts/novel-characters.mjs render cast.json --html > report.html
@@ -74,7 +78,9 @@ node skills/novel-characters/scripts/selftest.mjs
 node skills/novel-characters/scripts/comic-selftest.mjs
 node skills/novel-characters/scripts/live-action-selftest.mjs
 node evals/eval.mjs
+node skills/novel-bible/scripts/selftest.mjs
 node skills/novel-characters/scripts/novel-characters.mjs validate skills/novel-characters/examples/渡口-cast.json skills/novel-characters/examples/渡口.txt
+node skills/novel-bible/scripts/novel-bible.mjs validate skills/novel-bible/examples/渡口-bible.json skills/novel-characters/examples/渡口.txt skills/novel-characters/examples/渡口-cast.json
 node skills/novel-characters/scripts/comic-image-set.mjs validate skills/novel-characters/examples/渡口-comic.json skills/novel-characters/examples/渡口-cast.json
 node skills/novel-characters/scripts/live-action-image-set.mjs validate skills/novel-characters/examples/渡口-live-action.json skills/novel-characters/examples/渡口-cast.json
 ```

@@ -7,10 +7,11 @@
 | 技能 | 功能 |
 | --- | --- |
 | [**novel-characters**](skills/novel-characters/README.md) | 人物分析、卡通形象、音色、三視圖、漫畫與真人身份固定圖片組與離線報告 |
+| [**novel-bible**](skills/novel-bible/README.md) | 在已驗證角色卡之上整理時間線、關係、矛盾與未解線索 |
 
 ## 主要能力
 
-- 將長篇文本分塊後掃描角色，合併跨章節名稱與別名。
+- 將長篇文本分塊後掃描角色，合併跨章節名稱與別名；超長文本可用章回或分段切塊。
 - 產出有原文依據的人物分析、卡通形象提示詞與 TTS 音色提示詞。
 - 預設同時產出漫畫版與真人版 sidecar：身份硬鎖定、七張必要圖片、服裝連戲、逐張驗收與檔案稽核。
 - `SKILL.md` 採用目前 Codex 技能格式，並提供 `agents/openai.yaml` 介面中繼資料。
@@ -26,7 +27,7 @@
 npx skills add stevenke1981/novelanalyze-skills
 ```
 
-這會把 `novel-characters` 裝進目前代理的 skills 目錄。若要 SHA-256 完整性校驗（Windows 複製）或符號連結（macOS／Linux），改用下面的安裝器。
+這會把 `novel-characters` 與 `novel-bible` 裝進目前代理的 skills 目錄。若要 SHA-256 完整性校驗（Windows 複製）或符號連結（macOS／Linux），改用下面的安裝器。
 
 ### Windows：Codex 與 OpenCode
 
@@ -68,7 +69,11 @@ $novel-characters 請分析 ./我的小說.txt，輸出角色設定、漫畫版�
 也可以直接使用確定性工具：
 
 ```powershell
+node .\skills\novel-characters\scripts\novel-characters.mjs chunk .\book.txt .\workdir --chapters
 node .\skills\novel-characters\scripts\novel-characters.mjs select .\roster-merged.json --top 10
+node .\skills\novel-characters\scripts\novel-characters.mjs harvest-quotes .\book.txt .\roster-merged.json
+node .\skills\novel-characters\scripts\novel-characters.mjs export-card .\cast.json --format tavern-v2 --out .\cards
+node .\skills\novel-bible\scripts\novel-bible.mjs validate .\book-bible.json .\book.txt .\cast.json
 node .\skills\novel-characters\scripts\novel-characters.mjs validate .\cast.json .\book.txt
 node .\skills\novel-characters\scripts\novel-characters.mjs validate .\cast.json .\book.txt --denylist .\denylist.txt
 node .\skills\novel-characters\scripts\novel-characters.mjs render .\cast.json --html > report.html
@@ -95,7 +100,9 @@ node .\skills\novel-characters\scripts\selftest.mjs
 node .\skills\novel-characters\scripts\comic-selftest.mjs
 node .\skills\novel-characters\scripts\live-action-selftest.mjs
 node .\evals\eval.mjs
+node .\skills\novel-bible\scripts\selftest.mjs
 node .\skills\novel-characters\scripts\novel-characters.mjs validate .\skills\novel-characters\examples\渡口-cast.json .\skills\novel-characters\examples\渡口.txt
+node .\skills\novel-bible\scripts\novel-bible.mjs validate .\skills\novel-bible\examples\渡口-bible.json .\skills\novel-characters\examples\渡口.txt .\skills\novel-characters\examples\渡口-cast.json
 node .\skills\novel-characters\scripts\comic-image-set.mjs validate .\skills\novel-characters\examples\渡口-comic.json .\skills\novel-characters\examples\渡口-cast.json
 node .\skills\novel-characters\scripts\live-action-image-set.mjs validate .\skills\novel-characters\examples\渡口-live-action.json .\skills\novel-characters\examples\渡口-cast.json
 ```

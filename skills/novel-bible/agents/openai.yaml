@@ -1,0 +1,4 @@
+interface:
+  display_name: "小說情節聖經"
+  short_description: "在角色卡之上整理時間線、關係、矛盾與線索"
+  default_prompt: "Use $novel-bible 依已驗證的角色卡與原文產出時間線、關係與矛盾檢查。"

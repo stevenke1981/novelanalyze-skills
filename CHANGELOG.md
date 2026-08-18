@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.0 — 2026-08-18
+
+- `chunk --chapters`／`--parts N`：長篇按章回或容量分段，每段各自最多 24 塊，並寫 `parts.json`。
+- `merge` 會合併 `part-*/roster-*.json`；截斷改為按段回報。
+- 新增 `harvest-quotes`，在寫角色卡前從原文抽出逐字引文候選。
+- 新增 `export-card --format tavern-v2`；RP 卡可用人名，圖像提示詞不匯出。
+- 新增可選 BookNLP 英文轉接器（文件 + 確定性轉換，不安裝 Python）。
+- 新增兄弟技能 `novel-bible`：時間線、關係、矛盾、線索，全部要有原文引文。
+
 ## novel-characters 1.4.0 — 2026-08-18
 
 - 文件新增 `npx skills add stevenke1981/novelanalyze-skills`，與既有 SHA-256／symlink 安裝器並存。

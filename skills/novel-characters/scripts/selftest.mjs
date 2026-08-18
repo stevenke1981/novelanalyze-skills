@@ -4,13 +4,17 @@
 //   node scripts/selftest.mjs
 
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { slug as sharedSlug } from './live-action/shared.mjs';
+import { entitiesToRoster } from './adapters/booknlp-to-roster.mjs';
 import { MIN_CJK_NAME_LENGTH } from './lib/names.mjs';
+import { detectChapters, partitionText } from './lib/parts.mjs';
+import { harvestQuotes } from './lib/quotes.mjs';
+import { exportCastToTavernV2 } from './lib/tavern.mjs';
 import { CHUNK_SIZE, DEFAULT_TOP, MAX_CHUNKS, chunkText, chunkTextWithMeta, mergeRoster, renderHtml, renderMarkdown, selectRoster, slug, validateCast } from './novel-characters.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -52,6 +56,87 @@ const exactCapacityTrap = '甲'.repeat(330_000);
 const limited = chunkTextWithMeta(exactCapacityTrap);
 eq(limited.chunks.length, MAX_CHUNKS, '容量邊界文字用滿所有分塊');
 ok(limited.truncated, '重疊造成尾端未覆蓋時會明確標示 truncated');
+
+const chaptered = detectChapters('第一章 渡河\n\n老周開船。\n\n第二章 霧\n\n沈知微上船。\n');
+eq(chaptered?.length, 2, '偵測到兩個中文章回');
+eq(chaptered[0].title.includes('一'), true, '第一章標題保留');
+eq(partitionText(`${'甲'.repeat(40)}\n\n${'乙'.repeat(40)}`, 2).length, 2, '無章回時可按段落切成兩段');
+
+const hierWork = mkdtempSync(join(tmpdir(), 'novel-characters-hier-'));
+try {
+  const bookPath = join(hierWork, 'book.txt');
+  writeFileSync(bookPath, `第一章 甲\n\n${'甲'.repeat(20_000)}\n\n第二章 乙\n\n${'乙'.repeat(20_000)}`);
+  const chunkCli = spawnSync(process.execPath, [join(here, 'novel-characters.mjs'), 'chunk', bookPath, join(hierWork, 'work'), '--chapters'], { encoding: 'utf8' });
+  eq(chunkCli.status, 0, 'chunk --chapters CLI 成功');
+  const payload = JSON.parse(chunkCli.stdout);
+  eq(payload.mode, 'chapters', '章回模式寫入 parts');
+  ok(payload.parts >= 2, '至少兩段');
+  ok(readdirSync(join(hierWork, 'work')).includes('parts.json'), '寫出 parts.json');
+  ok(readdirSync(join(hierWork, 'work', 'part-00')).some((file) => file.startsWith('chunk-')), '每段自己的 chunk-NN.txt');
+} finally {
+  rmSync(hierWork, { recursive: true, force: true });
+}
+
+const longPartsWork = mkdtempSync(join(tmpdir(), 'novel-characters-parts-'));
+try {
+  const bookPath = join(longPartsWork, 'book.txt');
+  writeFileSync(bookPath, '甲'.repeat(400_000));
+  const chunkCli = spawnSync(process.execPath, [join(here, 'novel-characters.mjs'), 'chunk', bookPath, join(longPartsWork, 'work'), '--parts', '2'], { encoding: 'utf8' });
+  eq(chunkCli.status, 0, '超長文字可用 --parts 分段');
+  const payload = JSON.parse(chunkCli.stdout);
+  eq(payload.parts, 2, '--parts 2 寫出兩段');
+  writeFileSync(join(longPartsWork, 'work', 'part-00', 'roster-00.json'), JSON.stringify({ characters: [{ name: '甲', aliases: [], note: 'a', quotes: [] }] }));
+  writeFileSync(join(longPartsWork, 'work', 'part-01', 'roster-00.json'), JSON.stringify({ characters: [{ name: '甲', aliases: ['阿甲'], note: 'b', quotes: [] }] }));
+  const mergeCli = spawnSync(process.execPath, [join(here, 'novel-characters.mjs'), 'merge', join(longPartsWork, 'work')], { encoding: 'utf8' });
+  eq(mergeCli.status, 0, 'merge 會收 part-*/roster');
+  const mergedParts = JSON.parse(mergeCli.stdout);
+  eq(mergedParts.length, 1, '跨段同名合併');
+  ok(mergedParts[0].aliases.includes('阿甲'), '跨段別名保留');
+} finally {
+  rmSync(longPartsWork, { recursive: true, force: true });
+}
+
+/* ---------------- harvestQuotes / export-card / BookNLP ---------------- */
+
+const harvested = harvestQuotes(SOURCE, [{ name: '沈知微', aliases: ['姑娘'] }, { name: '陸行遠', aliases: ['陸'] }]);
+ok(harvested.find((entry) => entry.name === '沈知微')?.quotes.some((quote) => quote.includes('沈知微')), 'harvest 抽出含本名的原文');
+ok(harvested.every((entry) => entry.quotes.every((quote) => SOURCE.includes(quote))), 'harvest 引文都是原文連續片段');
+
+const harvestCliDir = mkdtempSync(join(tmpdir(), 'novel-characters-harvest-'));
+try {
+  const rosterPath = join(harvestCliDir, 'roster.json');
+  writeFileSync(rosterPath, JSON.stringify([{ name: '胡二爺', aliases: [] }]));
+  const harvestCli = spawnSync(process.execPath, [join(here, 'novel-characters.mjs'), 'harvest-quotes', join(examples, '渡口.txt'), rosterPath], { encoding: 'utf8' });
+  eq(harvestCli.status, 0, 'harvest-quotes CLI 成功');
+  ok(JSON.parse(harvestCli.stdout).characters[0].quotes.some((quote) => quote.includes('胡二爺')), 'CLI 抽出胡二爺引文');
+} finally {
+  rmSync(harvestCliDir, { recursive: true, force: true });
+}
+
+const DOC = JSON.parse(readFileSync(join(examples, '渡口-cast.json'), 'utf8'));
+const tavernCards = exportCastToTavernV2(DOC);
+eq(tavernCards[0].spec, 'chara_card_v2', '匯出 V2 spec');
+ok(tavernCards[0].data.name, 'RP 卡保留角色名');
+ok(!JSON.stringify(tavernCards[0].data).includes(DOC.characters[0].image.prompt.slice(0, 40)), 'RP 卡不帶圖像提示詞');
+
+const exportDir = mkdtempSync(join(tmpdir(), 'novel-characters-export-'));
+try {
+  const exportCli = spawnSync(process.execPath, [join(here, 'novel-characters.mjs'), 'export-card', join(examples, '渡口-cast.json'), '--format', 'tavern-v2', '--out', exportDir], { encoding: 'utf8' });
+  eq(exportCli.status, 0, 'export-card CLI 成功');
+  const exported = JSON.parse(exportCli.stdout);
+  eq(exported.count, DOC.characters.length, '每位角色一張卡');
+  ok(readdirSync(exportDir).includes(`${slug(DOC.characters[0].name)}.json`), '以安全檔名寫出');
+} finally {
+  rmSync(exportDir, { recursive: true, force: true });
+}
+
+const booknlpRoster = entitiesToRoster(
+  ['1\t0\t1\tPROP\tPER\tAlice', '1\t2\t3\tPROP\tPER\tAlice', '1\t4\t5\tPROP\tPER\tAlice Liddel', '1\t8\t8\tPRON\tPER\tshe', '2\t10\t11\tPROP\tPER\tWhite Rabbit'].join('\n'),
+  '0\t3\t4\t5\tshe\t1\tI shall be late!',
+);
+eq(booknlpRoster.characters.length, 2, 'BookNLP 轉接器依 coref 聚成角色');
+ok(booknlpRoster.characters.some((entry) => entry.name === 'Alice' && entry.aliases.includes('Alice Liddel')), '專名聚類成 name/aliases');
+ok(!booknlpRoster.characters.some((entry) => entry.aliases.includes('she') || entry.name === 'she'), '代詞不進名單');
 
 /* ---------------- mergeRoster ---------------- */
 
@@ -380,7 +465,6 @@ ok(!evilMd.includes('<script>'), 'Markdown 標題中的 HTML 被轉義');
 ok(!evilMd.includes('<img src=x onerror'), 'Markdown 角色名與摘要中的 HTML 被轉義');
 
 // 故事摘要
-const DOC = JSON.parse(readFileSync(join(examples, '渡口-cast.json'), 'utf8'));
 ok(DOC.summary && DOC.summary.trim(), '範例帶故事摘要');
 ok(renderHtml(CAST, '渡口', DOC.summary).includes('class="synopsis"'), 'HTML 頂部渲染摘要');
 ok(!renderHtml(CAST, '渡口', '').includes('class="synopsis"'), '沒有摘要時不留空殼');

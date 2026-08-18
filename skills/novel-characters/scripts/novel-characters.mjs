@@ -7,7 +7,12 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { basename, join, resolve } from 'node:path';
 import { isMainModule } from './lib/main.mjs';
 import { collectForbiddenNames, containsName, describeForbiddenHit, loadDenylist } from './lib/names.mjs';
+import { effectiveChunkCapacity, planHierarchicalChunks } from './lib/parts.mjs';
+import { harvestQuotes } from './lib/quotes.mjs';
 import { slug } from './lib/slug.mjs';
+import { exportCastToTavernV2 } from './lib/tavern.mjs';
+
+export { harvestQuotes, planHierarchicalChunks, exportCastToTavernV2 };
 
 /* ------------------------------------------------------------------ */
 /* chunk                                                               */
@@ -873,15 +878,29 @@ document.addEventListener('click', async (e) => {
 const USAGE = `novel-characters.mjs — novel-characters skill 的確定性工具
 
   chunk <book.txt> <workdir>       段落感知重疊切塊，寫 chunk-NN.txt，列印塊數
-  merge <workdir>                  合併 roster-*.json，列印已排序角色 JSON
+  merge <workdir>                  合併 roster-*.json（含 part-*/），列印已排序角色 JSON
   select <roster.json>             從 merge 結果選角，預設前 ${DEFAULT_TOP} 名
+  harvest-quotes <book.txt> <roster.json>
+                                   依名稱／別名從原文抽出逐字引文候選
+  export-card <cast.json>          匯出角色卡；目前支援 --format tavern-v2
   validate <cast.json> <book.txt>  驗證；有違規逐條列印並 exit 1
   render <cast.json> [--html|--md] 渲染報告到 stdout（預設 --md）
   slug <name>                      角色名轉安全檔名
 
+chunk 選項：
+  --chapters        依章回標題切段；找不到標題則改按容量分段
+  --parts <n>       依段落邊界切成 n 段，每段各自最多 ${MAX_CHUNKS} 塊
+
 select 選項：
   --top <n>         取前 n 名（預設 ${DEFAULT_TOP}）。假設輸入已依戲份排序
   --names a,b       依名稱或別名顯式選角；若出現則忽略 --top
+
+harvest-quotes 選項：
+  --max <n>         每位角色最多保留 n 條引文（預設 8）
+
+export-card 選項：
+  --format tavern-v2
+  --out <dir>       每位角色寫一個 JSON；RP 卡可用人名，圖像提示詞不匯出
 
 validate 選項：
   --denylist <file> 額外禁用詞，一行一詞，# 開頭為註解
@@ -921,6 +940,75 @@ function parseNameList(value) {
     .filter(Boolean);
 }
 
+function positionalArgs(args, flagsWithValue = []) {
+  return args.filter((item, index, all) => {
+    if (String(item).startsWith('-')) return false;
+    return !flagsWithValue.includes(all[index - 1]);
+  });
+}
+
+function listStaleArtifacts(dir) {
+  return readdirSync(dir).filter((file) =>
+    /^(?:chunk-\d+\.txt|roster-\d+\.json|roster-merged\.json|card-.*\.json|parts\.json)$/.test(file)
+    || /^part-\d+$/.test(file),
+  );
+}
+
+function loadRosterBatches(dir) {
+  const partDirs = readdirSync(dir).filter((file) => /^part-\d+$/.test(file)).sort();
+  if (partDirs.length) {
+    const batches = [];
+    for (const partDir of partDirs) {
+      const files = readdirSync(join(dir, partDir)).filter((file) => /^roster-\d+\.json$/.test(file)).sort();
+      for (const file of files) {
+        const raw = readJson(join(dir, partDir, file));
+        batches.push(Array.isArray(raw) ? raw : (raw.characters ?? []));
+      }
+    }
+    return batches;
+  }
+  const files = readdirSync(dir).filter((file) => /^roster-\d+\.json$/.test(file)).sort();
+  return files.map((file) => {
+    const raw = readJson(join(dir, file));
+    return Array.isArray(raw) ? raw : (raw.characters ?? []);
+  });
+}
+
+function writeChunkPlan(workdir, plan) {
+  if (plan.mode === 'flat' && plan.parts.length <= 1) {
+    const chunks = plan.parts[0]?.chunks ?? [];
+    chunks.forEach((chunk, index) => {
+      writeFileSync(join(workdir, `chunk-${String(index).padStart(2, '0')}.txt`), chunk, 'utf8');
+    });
+    return { chunks: chunks.length, parts: 1 };
+  }
+
+  const summary = [];
+  for (const [index, part] of plan.parts.entries()) {
+    const partDirName = `part-${String(index).padStart(2, '0')}`;
+    const partDir = join(workdir, partDirName);
+    mkdirSync(partDir, { recursive: true });
+    part.chunks.forEach((chunk, chunkIndex) => {
+      writeFileSync(join(partDir, `chunk-${String(chunkIndex).padStart(2, '0')}.txt`), chunk, 'utf8');
+    });
+    summary.push({
+      id: part.id,
+      title: part.title,
+      dir: partDirName,
+      chunks: part.chunks.length,
+      chars: part.chars,
+      truncated: part.truncated,
+    });
+  }
+  writeFileSync(join(workdir, 'parts.json'), `${JSON.stringify({
+    mode: plan.mode,
+    truncated: plan.truncated,
+    fallback: plan.fallback,
+    parts: summary,
+  }, null, 2)}\n`, 'utf8');
+  return { chunks: summary.reduce((sum, part) => sum + part.chunks, 0), parts: summary.length };
+}
+
 function main(argv) {
   const [cmd, ...rest] = argv;
 
@@ -930,42 +1018,49 @@ function main(argv) {
   }
 
   if (cmd === 'chunk') {
-    const [book, workdir] = rest;
-    if (!book || !workdir) throw new Error('用法：chunk <book.txt> <workdir>');
+    const [book, workdir] = positionalArgs(rest, ['--parts']);
+    if (!book || !workdir) throw new Error('用法：chunk <book.txt> <workdir> [--chapters] [--parts n]');
     const text = readFileSync(resolve(book), 'utf8');
-    const { chunks, truncated } = chunkTextWithMeta(text);
+    const partsFlag = takeFlag(rest, '--parts');
+    const plan = planHierarchicalChunks(text, {
+      chapters: rest.includes('--chapters'),
+      parts: partsFlag == null ? null : Number(partsFlag),
+      chunkWithMeta: chunkTextWithMeta,
+      capacity: effectiveChunkCapacity(CHUNK_SIZE, CHUNK_OVERLAP, MAX_CHUNKS),
+    });
     const resolvedWorkdir = resolve(workdir);
     mkdirSync(resolvedWorkdir, { recursive: true });
-    const staleArtifacts = readdirSync(resolvedWorkdir).filter((file) =>
-      /^(?:chunk-\d+\.txt|roster-\d+\.json|roster-merged\.json|card-.*\.json)$/.test(file),
-    );
+    const staleArtifacts = listStaleArtifacts(resolvedWorkdir);
     if (staleArtifacts.length) {
       throw new Error(`工作目錄含有前次產物，請改用空目錄：${staleArtifacts.join(', ')}`);
     }
-    chunks.forEach((c, i) => {
-      writeFileSync(join(resolvedWorkdir, `chunk-${String(i).padStart(2, '0')}.txt`), c, 'utf8');
-    });
-    console.log(
-      JSON.stringify(
-        { chunks: chunks.length, chars: text.length, workdir: resolvedWorkdir, truncated },
-        null,
-        2,
-      ),
-    );
-    if (truncated) console.error(`⚠️ 文字超過 ${MAX_CHUNKS} 塊上限，尾部未掃描`);
+    const written = writeChunkPlan(resolvedWorkdir, plan);
+    const payload = {
+      mode: plan.mode,
+      chunks: written.chunks,
+      parts: written.parts,
+      chars: text.length,
+      workdir: resolvedWorkdir,
+      truncated: plan.truncated,
+      fallback: plan.fallback,
+      partTruncated: plan.parts
+        .filter((part) => part.truncated)
+        .map((part) => ({ id: part.id, title: part.title, chunks: part.chunks.length })),
+    };
+    console.log(JSON.stringify(payload, null, 2));
+    if (plan.truncated) {
+      const labels = payload.partTruncated.map((part) => part.id).join(', ') || 'flat';
+      console.error(`⚠️ 以下分段超過 ${MAX_CHUNKS} 塊上限，尾部未掃描：${labels}`);
+    }
     return;
   }
 
-  if (cmd === 'merge') {
+  if (cmd === 'merge' || cmd === 'merge-parts') {
     const [workdir] = rest;
     if (!workdir) throw new Error('用法：merge <workdir>');
     const dir = resolve(workdir);
-    const files = readdirSync(dir).filter((f) => /^roster-\d+\.json$/.test(f)).sort();
-    if (!files.length) throw new Error(`${dir} 裡沒有 roster-*.json`);
-    const batches = files.map((f) => {
-      const raw = readJson(join(dir, f));
-      return Array.isArray(raw) ? raw : (raw.characters ?? []);
-    });
+    const batches = loadRosterBatches(dir);
+    if (!batches.length) throw new Error(`${dir} 裡沒有 roster-*.json 或 part-*/roster-*.json`);
     console.log(JSON.stringify(mergeRoster(batches), null, 2));
     return;
   }
@@ -980,6 +1075,37 @@ function main(argv) {
       top: topFlag == null ? DEFAULT_TOP : Number(topFlag),
     });
     console.log(JSON.stringify(selected, null, 2));
+    return;
+  }
+
+  if (cmd === 'harvest-quotes') {
+    const [bookPath, rosterPath] = positionalArgs(rest, ['--max']);
+    if (!bookPath || !rosterPath) throw new Error('用法：harvest-quotes <book.txt> <roster.json> [--max n]');
+    const maxFlag = takeFlag(rest, '--max');
+    const harvested = harvestQuotes(readFileSync(resolve(bookPath), 'utf8'), readJson(rosterPath), {
+      max: maxFlag == null ? undefined : Number(maxFlag),
+    });
+    console.log(JSON.stringify({ characters: harvested }, null, 2));
+    return;
+  }
+
+  if (cmd === 'export-card') {
+    const [castPath] = positionalArgs(rest, ['--format', '--out']);
+    if (!castPath) throw new Error('用法：export-card <cast.json> --format tavern-v2 --out <dir>');
+    const format = takeFlag(rest, '--format') ?? 'tavern-v2';
+    if (format !== 'tavern-v2') throw new Error(`不支援的匯出格式：${format}`);
+    const outDir = takeFlag(rest, '--out');
+    if (!outDir) throw new Error('export-card 需要 --out <dir>');
+    const raw = readJson(castPath);
+    const cards = exportCastToTavernV2(raw);
+    const resolvedOut = resolve(outDir);
+    mkdirSync(resolvedOut, { recursive: true });
+    const written = cards.map((card) => {
+      const fileName = `${slug(card.data.name)}.json`;
+      writeFileSync(join(resolvedOut, fileName), `${JSON.stringify(card, null, 2)}\n`, 'utf8');
+      return fileName;
+    });
+    console.log(JSON.stringify({ format, count: written.length, out: resolvedOut, files: written }, null, 2));
     return;
   }
 

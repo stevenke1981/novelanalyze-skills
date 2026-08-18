@@ -31,6 +31,10 @@ jobs:
         run: node skills/novel-characters/scripts/live-action-selftest.mjs
       - name: Run deterministic evals
         run: node evals/eval.mjs
+      - name: Run novel-bible self-test
+        run: node skills/novel-bible/scripts/selftest.mjs
+      - name: Validate bible fixture
+        run: node skills/novel-bible/scripts/novel-bible.mjs validate skills/novel-bible/examples/渡口-bible.json skills/novel-characters/examples/渡口.txt skills/novel-characters/examples/渡口-cast.json
       - name: Validate bundled fixture
         run: node skills/novel-characters/scripts/novel-characters.mjs validate skills/novel-characters/examples/渡口-cast.json skills/novel-characters/examples/渡口.txt
       - name: Validate comic fixture

@@ -48,12 +48,21 @@ description: >-
 node "<SKILL_DIR>/scripts/novel-characters.mjs" chunk "<book.txt>" "<workdir>"
 ```
 
+長篇若回報 `truncated: true`，改用階層分塊，不要假裝已掃完全文：
+
+```bash
+node "<SKILL_DIR>/scripts/novel-characters.mjs" chunk "<book.txt>" "<workdir>" --chapters
+node "<SKILL_DIR>/scripts/novel-characters.mjs" chunk "<book.txt>" "<workdir>" --parts 3
+```
+
+`--chapters` 依章回標題分段；找不到標題時改按容量切成多段。每一段各自最多 24 塊，寫在 `part-NN/chunk-MM.txt`，並留下 `parts.json`。某段仍 `truncated` 時必須點名該段。
+
 檢查輸出的 JSON：
 
 - `chunks == 0`：停止並回報輸入為空。
-- `chunks == 1`：直接讀取該分塊並建立 `roster-00.json`。
-- `chunks > 1`：逐塊執行角色掃描；環境支援安全的子代理時可平行處理。
-- `truncated == true`：明確回報尾端未掃描，不得宣稱已分析全文。
+- `mode == "flat"` 且 `chunks == 1`：直接讀取該分塊並建立 `roster-00.json`。
+- `chunks > 1` 或 `parts > 1`：逐塊執行角色掃描；有 `part-NN/` 時把 roster 寫進同一段目錄。
+- 任一 `truncated == true`：明確回報未掃描範圍，不得宣稱已分析全文。
 
 ### 3. 掃描角色
 
@@ -66,7 +75,15 @@ node "<SKILL_DIR>/scripts/novel-characters.mjs" merge "<workdir>" > "<workdir>/r
 node "<SKILL_DIR>/scripts/novel-characters.mjs" select "<workdir>/roster-merged.json" --top 10 > "<workdir>/roster-selected.json"
 ```
 
-依名稱與別名合併同一角色，並依出現分塊數排序。再用 `select` 切片；預設前 10 位。使用者指定數量時改 `--top N`，指定名單時用 `--names 沈知微,老周`（此時忽略 `--top`）。不要只在心裡切前 10 名。最後回報尚未製作完整角色卡的人數。
+`merge` 會讀取工作目錄裡的 `roster-*.json`，也會讀取 `part-*/roster-*.json`。依名稱與別名合併同一角色，並依出現分塊數排序。再用 `select` 切片；預設前 10 位。使用者指定數量時改 `--top N`，指定名單時用 `--names 沈知微,老周`（此時忽略 `--top`）。不要只在心裡切前 10 名。最後回報尚未製作完整角色卡的人數。
+
+在寫角色卡前，用原文補引文候選（只複製連續原文，不寫分析）：
+
+```bash
+node "<SKILL_DIR>/scripts/novel-characters.mjs" harvest-quotes "<book.txt>" "<workdir>/roster-selected.json"
+```
+
+英文小說若已有 BookNLP 輸出，可先看 `adapters/booknlp-to-roster.md`；這不是安裝依賴，也不可用於中文。
 
 ### 5. 建立角色卡與故事摘要
 
@@ -173,7 +190,19 @@ node "<SKILL_DIR>/scripts/comic-image-set.mjs" render "<書名>-comic.json" --md
 node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-action.json" --md > "<書名>-live-action.md"
 ```
 
-### 11. 驗收
+### 11. 可選匯出與情節聖經
+
+若使用者要 SillyTavern／Tavern 角色卡：
+
+```bash
+node "<SKILL_DIR>/scripts/novel-characters.mjs" export-card "<書名>-cast.json" --format tavern-v2 --out "<輸出目錄>/cards"
+```
+
+RP 卡可以使用角色名；圖像提示詞留在 `cast.json`，繼續禁人名。
+
+時間線、關係、矛盾與伏筆不要寫進本技能。改用兄弟技能 `novel-bible`。
+
+### 12. 驗收
 
 實際確認：
 
@@ -187,7 +216,7 @@ node "<SKILL_DIR>/scripts/live-action-image-set.mjs" render "<書名>-live-actio
 
 ## 邊界
 
-- 單次最多 24 個分塊，約 33 萬字元；超出時只分析已分塊範圍。
+- 單段最多 24 個分塊，約 33 萬字元。長篇必須用 `--chapters` 或 `--parts N` 分段；仍截斷的段落要點名。
 - 分析欄位固定使用台灣繁體中文；逐字引文永遠保留原文。
 - 影像生成僅使用目前環境已提供的圖像工具，不自行要求或改用 `OPENAI_API_KEY`。
 - 漫畫與真人身份固定都不使用明星、演員、公眾人物或既有 IP 角色相貌作捷徑。
