@@ -29,13 +29,58 @@ const usage = () => `Usage:
 
 audit 選項：
   --no-identity-score   只檢查 PNG 檔頭與比例，不比對 identity-board 雜湊
-  --max-distance <n>    身份雜湊最大漢明距離（預設 ${DEFAULT_MAX_DISTANCE}）`;
+  --max-distance <n>    身份雜湊最大漢明距離，0–64 的整數（預設 ${DEFAULT_MAX_DISTANCE}）`;
+
+function parseArguments(args, { booleans = [], values = [] } = {}) {
+  const booleanOptions = new Set(booleans);
+  const valueOptions = new Set(values);
+  const options = new Map();
+  const positionals = [];
+
+  for (let index = 0; index < args.length; index += 1) {
+    const raw = args[index];
+    const item = String(raw);
+    if (!item.startsWith('--')) {
+      positionals.push(raw);
+      continue;
+    }
+    if (options.has(item)) throw new Error(`選項重複：${item}`);
+    if (booleanOptions.has(item)) {
+      options.set(item, true);
+      continue;
+    }
+    if (valueOptions.has(item)) {
+      const value = args[index + 1];
+      if (value == null || String(value).startsWith('--')) throw new Error(`${item} 需要值`);
+      options.set(item, value);
+      index += 1;
+      continue;
+    }
+    throw new Error(`未知選項：${item}`);
+  }
+
+  return {
+    positionals,
+    has: (name) => options.has(name),
+    get: (name) => options.get(name) ?? null,
+  };
+}
+
+function parseMaxDistance(value) {
+  if (value == null) return DEFAULT_MAX_DISTANCE;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 64) {
+    throw new Error('--max-distance 必須是 0–64 的整數');
+  }
+  return parsed;
+}
 
 export function runCli(argv) {
   const [command, input, ...rest] = argv;
   if (!command || command === '-h' || command === '--help') return console.log(usage());
   if (command === 'slug') {
     if (!input) throw new Error('slug 需要角色名稱');
+    if (rest.length) throw new Error(`slug 收到多餘參數：${rest.join(' ')}`);
     return console.log(slug(input));
   }
   if (!input) throw new Error(`${command} 需要輸入檔案`);
@@ -43,7 +88,9 @@ export function runCli(argv) {
   const manifest = parseJson(manifestPath);
 
   if (command === 'validate') {
-    const cast = rest[0] ? parseJson(resolve(rest[0])) : null;
+    const parsed = parseArguments(rest);
+    if (parsed.positionals.length > 1) throw new Error('validate 最多接受一個 cast.json');
+    const cast = parsed.positionals[0] ? parseJson(resolve(parsed.positionals[0])) : null;
     const problems = validateManifest(manifest, cast);
     if (problems.length) {
       for (const problem of problems) console.error(`- ${problem}`);
@@ -54,29 +101,44 @@ export function runCli(argv) {
   }
 
   if (command === 'render') {
-    if (!rest.includes('--md')) throw new Error('render 目前只支援 --md');
+    const parsed = parseArguments(rest, { booleans: ['--md'] });
+    if (parsed.positionals.length) throw new Error(`render 收到多餘參數：${parsed.positionals.join(' ')}`);
+    if (!parsed.has('--md')) throw new Error('render 目前只支援 --md');
     const problems = validateManifest(manifest);
     if (problems.length) throw new Error(`設定未通過驗證：\n${problems.map((p) => `- ${p}`).join('\n')}`);
     return process.stdout.write(renderMarkdown(manifest));
   }
 
   if (command === 'compose-sequence') {
-    const nameIndex = rest.indexOf('--character');
-    const characterName = nameIndex >= 0 ? rest[nameIndex + 1] : null;
+    const parsed = parseArguments(rest, { values: ['--character'] });
+    if (parsed.positionals.length) throw new Error(`compose-sequence 收到多餘參數：${parsed.positionals.join(' ')}`);
+    const characterName = parsed.get('--character');
     const sequence = composeSequence(manifest, characterName);
     if (characterName && !sequence.length) throw new Error(`找不到角色：${characterName}`);
     return process.stdout.write(`${JSON.stringify({ source: manifest.source, mode: manifest.mode, characters: sequence }, null, 2)}\n`);
   }
 
   if (command === 'audit') {
-    const positional = rest.filter((item, index, all) => !String(item).startsWith('-') && all[index - 1] !== '--max-distance');
-    const baseDirectory = positional[0] && !positional[0].endsWith('.json') ? positional[0] : dirname(manifestPath);
-    const castPath = positional.find((item) => item.endsWith('.json'));
+    const parsed = parseArguments(rest, {
+      booleans: ['--no-identity-score'],
+      values: ['--max-distance'],
+    });
+    if (parsed.positionals.length > 2) throw new Error('audit 最多接受 base-directory 與 cast.json 兩個位置參數');
+
+    let baseDirectory = dirname(manifestPath);
+    let castPath = null;
+    if (parsed.positionals.length === 1) {
+      const [only] = parsed.positionals;
+      if (String(only).toLowerCase().endsWith('.json')) castPath = only;
+      else baseDirectory = only;
+    } else if (parsed.positionals.length === 2) {
+      [baseDirectory, castPath] = parsed.positionals;
+    }
+
     const cast = castPath ? parseJson(resolve(castPath)) : null;
-    const maxIndex = rest.indexOf('--max-distance');
     const problems = auditManifest(manifest, baseDirectory, cast, {
-      scoreIdentity: !rest.includes('--no-identity-score'),
-      maxDistance: maxIndex >= 0 ? Number(rest[maxIndex + 1]) : DEFAULT_MAX_DISTANCE,
+      scoreIdentity: !parsed.has('--no-identity-score'),
+      maxDistance: parseMaxDistance(parsed.get('--max-distance')),
     });
     if (problems.length) {
       for (const problem of problems) console.error(`- ${problem}`);
