@@ -241,10 +241,12 @@ function validateShot(shot, shotIndex, character, visualMode, label, names, shot
   if (isNonEmptyString(shot.output) && (shot.output.includes('\\') || shot.output.split('/').includes('..'))) {
     problems.push(`${shotLabel}.output 不得包含反斜線或 .. 路徑片段`);
   }
-  if (seenOutputs.has(shot.output)) problems.push(`${shotLabel}.output 與其他圖片重複：${shot.output}`);
-  seenOutputs.add(shot.output);
+  if (isNonEmptyString(shot.output)) {
+    if (seenOutputs.has(shot.output)) problems.push(`${shotLabel}.output 與其他圖片重複：${shot.output}`);
+    seenOutputs.add(shot.output);
+  }
   if (shot.state != null && shot.state !== '') {
     if (!isNonEmptyString(shot.state)) problems.push(`${shotLabel}.state 必須是 state id`);
-    else if (stateIds.size && !stateIds.has(shot.state)) problems.push(`${shotLabel}.state 找不到：${shot.state}`);
+    else if (!stateIds.has(shot.state)) problems.push(`${shotLabel}.state 找不到：${shot.state}`);
   }
 }
