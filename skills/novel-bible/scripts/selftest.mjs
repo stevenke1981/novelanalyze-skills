@@ -27,9 +27,43 @@ assert.deepEqual(validateBible(bible, book, cast), [], 'bundled bible fixture mu
 }
 
 {
+  const broken = clone(bible);
+  broken.timeline.push({ ...clone(broken.timeline[0]), what: '另一個事件' });
+  const problems = validateBible(broken, book, cast);
+  assert.ok(problems.some((problem) => problem.includes('.id 重複')));
+  assert.ok(problems.some((problem) => problem.includes('.order 重複')));
+}
+
+{
+  const broken = clone(bible);
+  if (!broken.contradictions.length) {
+    broken.contradictions.push({ id: 'c01', summary: '尚未釐清的矛盾', status: 'open', evidence: [broken.timeline[0].evidence[0]] });
+  }
+  broken.contradictions.push(clone(broken.contradictions[0]));
+  assert.ok(validateBible(broken, book, cast).some((problem) => problem.includes('contradictions') && problem.includes('.id 重複')));
+}
+
+{
+  const broken = clone(bible);
+  broken.threads.push(clone(broken.threads[0]));
+  assert.ok(validateBible(broken, book, cast).some((problem) => problem.includes('threads') && problem.includes('.id 重複')));
+}
+
+{
   const markdown = renderMarkdown(bible);
   assert.match(markdown, /渡口 · 情節聖經/);
   assert.match(markdown, /陸行遠口袋裡的硬物/);
+}
+
+{
+  const hostile = clone(bible);
+  hostile.source = '<script>alert(1)</script>';
+  hostile.timeline[0].what = '<img src=x onerror=alert(1)>事件';
+  const markdown = renderMarkdown(hostile);
+  assert.ok(!markdown.includes('<script>'));
+  assert.ok(!markdown.includes('<img src=x'));
+  assert.match(markdown, /&lt;script&gt;/);
+  assert.match(markdown, /&lt;img/);
 }
 
 console.log('novel-bible selftest: PASS');
