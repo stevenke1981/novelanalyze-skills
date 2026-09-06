@@ -15,7 +15,7 @@ description: >-
 - `<書名>-bible.json`：時間線、關係、矛盾、線索。
 - `<書名>-bible.md`：方便閱讀的版本。
 
-每一條事件、關係、矛盾與線索都必須帶原文逐字 `evidence`。沒有引文就不要寫。
+每一條事件、關係、矛盾與線索都必須帶原文逐字 `evidence`。沒有引文就不要寫。`timeline.id` 與 `timeline.order` 必須各自唯一；`contradictions.id` 與 `threads.id` 也必須在各自陣列內唯一。
 
 ## 工作流程
 
@@ -41,6 +41,8 @@ description: >-
 
 建立 `<書名>-bible.json`。長篇先按 `novel-characters` 的 `chunk --chapters` 或 `chunk --parts N` 分段觀察，再合併成一份 bible；每一段的發現都要能回到原文引文。
 
+合併時先依語意去重，再重新檢查所有 `id` 與時間線 `order`，不得讓不同事件共用同一識別碼或排序值。
+
 ### 4. 驗證與渲染
 
 ```bash
@@ -48,7 +50,7 @@ node "<SKILL_DIR>/scripts/novel-bible.mjs" validate "<書名>-bible.json" "<book
 node "<SKILL_DIR>/scripts/novel-bible.mjs" render "<書名>-bible.json" --md > "<書名>-bible.md"
 ```
 
-有錯誤就修正，不得刪引文或放寬規則來換取通過。
+有錯誤就修正，不得刪引文或放寬規則來換取通過。Markdown renderer 會轉義模型內容中的 HTML 與 Markdown 控制字元，不要繞過 renderer 直接拼接輸出。
 
 ## 邊界
 
