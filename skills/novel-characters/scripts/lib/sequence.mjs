@@ -1,19 +1,26 @@
+const nonEmptyString = (value) => typeof value === 'string' && value.trim().length > 0;
+
 export function composeShotPrompt(manifest, character, shot) {
   const style = manifest?.styleBible ?? {};
   const capture = style.capture ?? {};
-  const parts = [
+  const positiveParts = [
     style.realityLevel,
     capture.cameraSystem,
     character?.basePrompt,
     shot?.prompt,
     'Use the approved identity-board as the highest-priority reference. Keep the same person, hair, body, and costume continuity.',
-    [style.globalNegativePrompt, character?.characterNegativePrompt, shot?.negativePrompt].filter(Boolean).join(', '),
-  ].filter((value) => typeof value === 'string' && value.trim());
+  ].filter(nonEmptyString);
+  const negativePrompt = [
+    style.globalNegativePrompt,
+    character?.characterNegativePrompt,
+    shot?.negativePrompt,
+  ].filter(nonEmptyString).join(', ');
+
   return {
     id: shot?.id,
     aspectRatio: shot?.aspectRatio,
-    prompt: parts.slice(0, -1).join('\n'),
-    negativePrompt: parts.at(-1) ?? '',
+    prompt: positiveParts.join('\n'),
+    negativePrompt,
   };
 }
 

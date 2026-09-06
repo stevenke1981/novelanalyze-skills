@@ -19,6 +19,12 @@ const looksZhTw = (value) => {
 };
 const isNonEmptyString = (value) => typeof value === 'string' && value.trim().length > 0;
 const keyOf = (value) => String(value ?? '').trim().normalize('NFKC').toLocaleLowerCase();
+const escapeHtml = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;');
+const markdownProse = (value) => escapeHtml(value).replace(/([\\`*_\[\]{}()#+.!|>-])/g, '\\$1');
+const markdownInline = (value) => markdownProse(value).replace(/[\r\n]+/g, ' ');
 
 function castNames(cast) {
   const names = new Set();
@@ -47,6 +53,13 @@ function checkEvidence(evidence, label, source, problems) {
   });
 }
 
+function checkUniqueString(value, label, seen, problems) {
+  if (!isNonEmptyString(value)) return;
+  const key = keyOf(value);
+  if (seen.has(key)) problems.push(`${label} 重複：${value}`);
+  else seen.add(key);
+}
+
 export function validateBible(bible, sourceText = null, cast = null) {
   const problems = [];
   if (!bible || typeof bible !== 'object' || Array.isArray(bible)) return ['bible 必須是 JSON 物件'];
@@ -71,10 +84,19 @@ export function validateBible(bible, sourceText = null, cast = null) {
     if (!names.has(keyOf(value))) problems.push(`${label} 不在 cast.json 的角色名或別名中：${value}`);
   };
 
+  const timelineIds = new Set();
+  const timelineOrders = new Set();
   for (const [index, event] of (bible.timeline ?? []).entries()) {
     const label = `timeline[${index}]`;
     if (!isNonEmptyString(event?.id)) problems.push(`${label}.id 缺失`);
-    if (!Number.isInteger(event?.order) || event.order < 1) problems.push(`${label}.order 必須是正整數`);
+    else checkUniqueString(event.id, `${label}.id`, timelineIds, problems);
+    if (!Number.isInteger(event?.order) || event.order < 1) {
+      problems.push(`${label}.order 必須是正整數`);
+    } else if (timelineOrders.has(event.order)) {
+      problems.push(`${label}.order 重複：${event.order}`);
+    } else {
+      timelineOrders.add(event.order);
+    }
     if (!looksZhTw(event?.when)) problems.push(`${label}.when 必須使用台灣繁體中文`);
     if (!looksZhTw(event?.what)) problems.push(`${label}.what 必須使用台灣繁體中文`);
     if (!Array.isArray(event?.who) || event.who.length < 1) problems.push(`${label}.who 至少需要一位角色`);
@@ -95,17 +117,21 @@ export function validateBible(bible, sourceText = null, cast = null) {
     checkEvidence(rel?.evidence, label, source, problems);
   }
 
+  const contradictionIds = new Set();
   for (const [index, item] of (bible.contradictions ?? []).entries()) {
     const label = `contradictions[${index}]`;
     if (!isNonEmptyString(item?.id)) problems.push(`${label}.id 缺失`);
+    else checkUniqueString(item.id, `${label}.id`, contradictionIds, problems);
     if (!looksZhTw(item?.summary)) problems.push(`${label}.summary 必須使用台灣繁體中文`);
     if (!CONTRADICTION_STATUS.has(item?.status)) problems.push(`${label}.status 必須是 open/resolved/disputed`);
     checkEvidence(item?.evidence, label, source, problems);
   }
 
+  const threadIds = new Set();
   for (const [index, item] of (bible.threads ?? []).entries()) {
     const label = `threads[${index}]`;
     if (!isNonEmptyString(item?.id)) problems.push(`${label}.id 缺失`);
+    else checkUniqueString(item.id, `${label}.id`, threadIds, problems);
     if (!looksZhTw(item?.name)) problems.push(`${label}.name 必須使用台灣繁體中文`);
     if (!THREAD_STATUS.has(item?.status)) problems.push(`${label}.status 必須是 open/resolved`);
     checkEvidence(item?.evidence, label, source, problems);
@@ -115,40 +141,40 @@ export function validateBible(bible, sourceText = null, cast = null) {
 }
 
 export function renderMarkdown(bible) {
-  const lines = [`# ${bible.source} · 情節聖經`, ''];
+  const lines = [`# ${markdownInline(bible.source)} · 情節聖經`, ''];
   if ((bible.timeline ?? []).length) {
     lines.push('## 時間線', '');
     for (const event of [...bible.timeline].sort((a, b) => a.order - b.order)) {
-      lines.push(`### ${event.order}. ${event.when}`);
+      lines.push(`### ${event.order}. ${markdownInline(event.when)}`);
       lines.push('');
-      lines.push(event.what);
+      lines.push(markdownProse(event.what));
       lines.push('');
-      lines.push(`- 人物：${(event.who ?? []).join('、')}`);
-      for (const quote of event.evidence ?? []) lines.push(`- 引文：${quote}`);
+      lines.push(`- 人物：${(event.who ?? []).map(markdownInline).join('、')}`);
+      for (const quote of event.evidence ?? []) lines.push(`- 引文：${markdownInline(quote)}`);
       lines.push('');
     }
   }
   if ((bible.relationships ?? []).length) {
     lines.push('## 關係', '');
     for (const rel of bible.relationships) {
-      lines.push(`- **${rel.from} → ${rel.to}**：${rel.relation}`);
-      for (const quote of rel.evidence ?? []) lines.push(`  - ${quote}`);
+      lines.push(`- **${markdownInline(rel.from)} → ${markdownInline(rel.to)}**：${markdownInline(rel.relation)}`);
+      for (const quote of rel.evidence ?? []) lines.push(`  - ${markdownInline(quote)}`);
     }
     lines.push('');
   }
   if ((bible.contradictions ?? []).length) {
     lines.push('## 矛盾', '');
     for (const item of bible.contradictions) {
-      lines.push(`- **${item.id}**（${item.status}）：${item.summary}`);
-      for (const quote of item.evidence ?? []) lines.push(`  - ${quote}`);
+      lines.push(`- **${markdownInline(item.id)}**（${markdownInline(item.status)}）：${markdownInline(item.summary)}`);
+      for (const quote of item.evidence ?? []) lines.push(`  - ${markdownInline(quote)}`);
     }
     lines.push('');
   }
   if ((bible.threads ?? []).length) {
     lines.push('## 線索', '');
     for (const item of bible.threads) {
-      lines.push(`- **${item.name}**（${item.status}）`);
-      for (const quote of item.evidence ?? []) lines.push(`  - ${quote}`);
+      lines.push(`- **${markdownInline(item.name)}**（${markdownInline(item.status)}）`);
+      for (const quote of item.evidence ?? []) lines.push(`  - ${markdownInline(quote)}`);
     }
     lines.push('');
   }
@@ -165,6 +191,7 @@ export function runCli(argv) {
   if (!input) throw new Error(`${command} 需要輸入檔案`);
   const bible = JSON.parse(readFileSync(resolve(input), 'utf8'));
   if (command === 'validate') {
+    if (rest.length > 2) throw new Error('validate 最多接受 book.txt 與 cast.json 兩個位置參數');
     const book = rest[0] ? readFileSync(resolve(rest[0]), 'utf8') : null;
     const cast = rest[1] ? JSON.parse(readFileSync(resolve(rest[1]), 'utf8')) : null;
     const problems = validateBible(bible, book, cast);
@@ -176,7 +203,7 @@ export function runCli(argv) {
     return console.log(`OK: ${bible.source} bible`);
   }
   if (command === 'render') {
-    if (!rest.includes('--md')) throw new Error('render 目前只支援 --md');
+    if (rest.length !== 1 || rest[0] !== '--md') throw new Error('render 目前只支援 --md');
     const problems = validateBible(bible);
     if (problems.length) throw new Error(`設定未通過驗證：\n${problems.map((item) => `- ${item}`).join('\n')}`);
     return process.stdout.write(renderMarkdown(bible));

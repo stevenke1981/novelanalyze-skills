@@ -2,7 +2,7 @@
 
 # novelanalyze-skills
 
-提供可供 AI 編程代理使用的自包含小說分析技能。目前收錄 `novel-characters`：將小說整理成可直接投入角色設計、配音、漫畫製作、真人選角與視覺製作的角色設定集。
+提供可供 AI 編程代理使用的自包含小說分析技能。目前收錄兩套技能：`novel-characters` 將小說整理成可直接投入角色設計、配音、漫畫製作、真人選角與視覺製作的角色設定集；`novel-bible` 在已驗證角色卡之上建立有原文依據的時間線、關係、矛盾與線索。
 
 | 技能 | 功能 |
 | --- | --- |
@@ -11,11 +11,13 @@
 
 ## 主要能力
 
-- 將長篇文本分塊後掃描角色，合併跨章節名稱與別名；超長文本可用章回或分段切塊。
+- 將長篇文本分塊後掃描角色，合併跨章節名稱與別名；章回模式會保留第一章前的序言／前言，並自動把超出單段容量的長章再細分，避免靜默漏讀。
 - 產出有原文依據的人物分析、卡通形象提示詞與 TTS 音色提示詞。
 - 預設同時產出漫畫版與真人版 sidecar：身份硬鎖定、七張必要圖片、服裝連戲、逐張驗收與檔案稽核。
+- 視覺設定會驗證 state 引用、輸出路徑與 CLI 參數；正向提示詞與 negative prompt 分開組合，不會因空欄位而互相錯置。
+- `novel-bible` 會檢查時間線 ID、順序與各類線索 ID 的唯一性，Markdown renderer 會轉義不可信的模型輸出。
 - `SKILL.md` 採用目前 Codex 技能格式，並提供 `agents/openai.yaml` 介面中繼資料。
-- Windows PowerShell 與 macOS／Linux Bash 安裝器支援 Codex 與 OpenCode。
+- Windows PowerShell 與 macOS／Linux Bash 安裝器支援 Codex、OpenCode 與 Claude Code。
 - Node.js 零套件依賴；GitHub Actions 於 Windows、macOS、Linux 及 Node.js 18／22／24 自測。
 - 未實際產生的三視圖、漫畫圖片或真人圖片不得誤報為完成。
 
@@ -29,38 +31,39 @@ npx skills add stevenke1981/novelanalyze-skills
 
 這會把 `novel-characters` 與 `novel-bible` 裝進目前代理的 skills 目錄。若要 SHA-256 完整性校驗（Windows 複製）或符號連結（macOS／Linux），改用下面的安裝器。
 
-### Windows：Codex 與 OpenCode
+### Windows：Codex、OpenCode 與 Claude Code
 
 ```powershell
 git clone https://github.com/stevenke1981/novelanalyze-skills.git
 Set-Location .\novelanalyze-skills
-.\scripts\install.ps1 -Codex -OpenCode
+.\scripts\install.ps1 -Codex -OpenCode -Claude
 ```
 
 安裝器會複製技能並比對 SHA-256；預設不覆寫既有技能。要更新已安裝版本時使用：
 
 ```powershell
-.\scripts\install.ps1 -Codex -OpenCode -Force
+.\scripts\install.ps1 -Codex -OpenCode -Claude -Force
 ```
 
 安裝位置：
 
 - Codex：`%USERPROFILE%\.codex\skills\novel-characters`
 - OpenCode：`%USERPROFILE%\.config\opencode\skills\novel-characters`
+- Claude Code：`%USERPROFILE%\.claude\skills\novel-characters`
 
 ### macOS／Linux
 
 ```bash
 git clone https://github.com/stevenke1981/novelanalyze-skills.git
 cd novelanalyze-skills
-./scripts/install.sh --codex --opencode
+./scripts/install.sh --codex --opencode --claude
 ```
 
 Bash 安裝器使用符號連結，因此 `git pull` 後會立即套用更新。
 
 ## 使用
 
-在 Codex 或 OpenCode 中呼叫：
+在 Codex、OpenCode 或 Claude Code 中呼叫：
 
 ```text
 $novel-characters 請分析 ./我的小說.txt，輸出角色設定、漫畫版與真人版主要角色圖片組到 ./角色設定
@@ -99,6 +102,7 @@ node .\skills\novel-characters\scripts\live-action-image-set.mjs audit .\book-li
 
 ```powershell
 node .\skills\novel-characters\scripts\selftest.mjs
+node .\skills\novel-characters\scripts\regression-selftest.mjs
 node .\skills\novel-characters\scripts\comic-selftest.mjs
 node .\skills\novel-characters\scripts\live-action-selftest.mjs
 node .\evals\eval.mjs

@@ -8,3 +8,5 @@ Add a source-grounded timeline, relationship list, contradiction log, and open-t
 node scripts/novel-bible.mjs validate book-bible.json book.txt cast.json
 node scripts/novel-bible.mjs render book-bible.json --md > book-bible.md
 ```
+
+Validation requires verbatim source evidence, character references that resolve through `cast.json`, unique timeline IDs and order values, and unique contradiction/thread IDs. Markdown output escapes untrusted generated HTML and Markdown control characters.

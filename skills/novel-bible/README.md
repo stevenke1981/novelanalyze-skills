@@ -17,8 +17,10 @@ node scripts/novel-bible.mjs validate book-bible.json book.txt cast.json
 node scripts/novel-bible.mjs render book-bible.json --md > book-bible.md
 ```
 
-## 限制
+## 限制與驗證
 
 - 每條紀錄都要有原文逐字引文。
 - 關係兩端必須是角色卡裡的名稱或別名。
+- `timeline.id`、`timeline.order`、`contradictions.id` 與 `threads.id` 必須在各自陣列內唯一。
+- Markdown renderer 會轉義模型產生內容中的 HTML 與 Markdown 控制字元。
 - 不內建資料庫或聊天記憶。

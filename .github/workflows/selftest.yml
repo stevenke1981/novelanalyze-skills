@@ -25,6 +25,8 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Run deterministic self-test
         run: node skills/novel-characters/scripts/selftest.mjs
+      - name: Run hardening regression self-test
+        run: node skills/novel-characters/scripts/regression-selftest.mjs
       - name: Run comic self-test
         run: node skills/novel-characters/scripts/comic-selftest.mjs
       - name: Run live-action self-test

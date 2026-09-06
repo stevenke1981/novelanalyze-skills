@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.7.0 — 2026-09-07
+
+- 修正 `chunk --chapters` 會忽略第一個章回標題之前序言／前言的資料遺失問題。
+- 章回或手動分段若仍超出單段容量，會自動細分至可完整掃描；只有無法安全細分時才保留 `truncated: true`。
+- 修正 `compose-sequence` 在所有 negative prompt 為空時，誤把身份連戲指令放進 `negativePrompt` 的欄位錯置。
+- 視覺設定現在會拒絕不存在的 `shot.state`，並避免多個空白 output 產生無意義的重複錯誤。
+- 視覺 CLI 改為嚴格解析參數，拒絕未知／重複／缺值選項，並將 `--max-distance` 限制為 0–64 的整數。
+- `novel-bible` 新增 timeline id／order、contradiction id 與 thread id 唯一性檢查，Markdown renderer 會轉義模型產生的 HTML／Markdown 控制字元。
+- 新增 hardening regression self-test，納入 Windows、macOS、Linux 與 Node.js 18／22／24 CI 矩陣。
+
 ## 1.6.0 — 2026-08-18
 
 - `audit` 對 `PASS` 檢查有效 PNG、長寬比，並可選比對 identity-board 平均雜湊；假文字檔不能再過關。
