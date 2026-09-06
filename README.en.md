@@ -2,15 +2,17 @@
 
 # novelanalyze-skills
 
-Self-contained fiction-analysis skills for AI coding agents. The repository currently ships `novel-characters` and `novel-bible`: the first turns prose into a production-ready character pack, and the second adds a source-grounded timeline and relationship bible.
+Self-contained fiction-analysis skills for AI coding agents. The repository ships `novel-characters` and `novel-bible`: the first turns prose into a production-ready character pack, and the second adds a source-grounded timeline and relationship bible.
 
 ## Capabilities
 
-- Chunk long fiction, discover characters, and merge names and aliases across chapters.
+- Chunk long fiction, preserve front matter before the first detected chapter, automatically subdivide oversized chapters, discover characters, and merge names and aliases across the whole work.
 - Produce evidence-backed profiles, bilingual cartoon-image prompts, voice prompts, JSON, Markdown, and an offline HTML report.
 - By default produce parallel comic and live-action sidecars with hard identity locks, seven required image shots, wardrobe continuity, per-image acceptance criteria, and file auditing.
+- Validate visual state references, output paths, and CLI options while keeping positive prompts and negative prompts structurally separate.
+- Enforce unique timeline IDs, timeline order values, contradiction IDs, and thread IDs in `novel-bible`; escape untrusted generated content in Markdown output.
 - Run without npm dependencies on Node.js 18 or newer.
-- Install into Codex and OpenCode on Windows, macOS, and Linux.
+- Install into Codex, OpenCode, and Claude Code on Windows, macOS, and Linux.
 
 ## Install
 
@@ -27,7 +29,7 @@ Windows:
 ```powershell
 git clone https://github.com/stevenke1981/novelanalyze-skills.git
 Set-Location .\novelanalyze-skills
-.\scripts\install.ps1 -Codex -OpenCode
+.\scripts\install.ps1 -Codex -OpenCode -Claude
 ```
 
 macOS or Linux:
@@ -35,10 +37,10 @@ macOS or Linux:
 ```bash
 git clone https://github.com/stevenke1981/novelanalyze-skills.git
 cd novelanalyze-skills
-./scripts/install.sh --codex --opencode
+./scripts/install.sh --codex --opencode --claude
 ```
 
-The Windows installer copies the skill and verifies complete SHA-256 tree parity. The Bash installer uses symlinks so updates apply immediately after `git pull`.
+The Windows installer copies each skill and verifies complete SHA-256 tree parity. The Bash installer uses symlinks so updates apply immediately after `git pull`.
 
 ## Use
 
@@ -77,6 +79,7 @@ node skills/novel-characters/scripts/live-action-image-set.mjs audit book-live-a
 
 ```bash
 node skills/novel-characters/scripts/selftest.mjs
+node skills/novel-characters/scripts/regression-selftest.mjs
 node skills/novel-characters/scripts/comic-selftest.mjs
 node skills/novel-characters/scripts/live-action-selftest.mjs
 node evals/eval.mjs
