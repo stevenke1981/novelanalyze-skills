@@ -2,12 +2,13 @@
 
 # novelanalyze-skills
 
-提供可供 AI 編程代理使用的自包含小說分析技能。目前收錄兩套技能：`novel-characters` 將小說整理成可直接投入角色設計、配音、漫畫製作、真人選角與視覺製作的角色設定集；`novel-bible` 在已驗證角色卡之上建立有原文依據的時間線、關係、矛盾與線索。
+提供可供 AI 編程代理使用的自包含小說分析技能。目前收錄三套技能：`novel-characters` 建立角色設定集；`novel-bible` 整理有原文依據的情節資料；`novel-audiobook` 將小說拆成 Fish S2 Pro 可用的有聲書配音材料。
 
 | 技能 | 功能 |
 | --- | --- |
 | [**novel-characters**](skills/novel-characters/README.md) | 人物分析、卡通形象、音色、三視圖、漫畫與真人身份固定圖片組與離線報告 |
 | [**novel-bible**](skills/novel-bible/README.md) | 在已驗證角色卡之上整理時間線、關係、矛盾與未解線索 |
+| [**novel-audiobook**](skills/novel-audiobook/README.md) | 旁白／角色分段、配音稿、發音表、Fish S2 Pro 請求與音檔順序清單 |
 
 ## 主要能力
 
@@ -29,7 +30,7 @@
 npx skills add stevenke1981/novelanalyze-skills
 ```
 
-這會把 `novel-characters` 與 `novel-bible` 裝進目前代理的 skills 目錄。若要 SHA-256 完整性校驗（Windows 複製）或符號連結（macOS／Linux），改用下面的安裝器。
+這會把上述三套技能裝進目前代理的 skills 目錄。若要 SHA-256 完整性校驗（Windows 複製）或符號連結（macOS／Linux），改用下面的安裝器。
 
 ### Windows：Codex、OpenCode 與 Claude Code
 
@@ -62,6 +63,14 @@ cd novelanalyze-skills
 Bash 安裝器使用符號連結，因此 `git pull` 後會立即套用更新。
 
 ## 使用
+
+有聲書材料：
+
+```text
+$novel-audiobook 分析 ./我的小說.txt，輸出 Fish S2 Pro 的旁白與角色配音稿、逐段 TTS 文字及請求材料到 ./有聲書材料
+```
+
+可不帶角色卡獨立使用。沒有真實 Fish 聲音 ID 時會交付完整文字並標記待綁定；本技能不會自行呼叫付費 TTS。
 
 在 Codex、OpenCode 或 Claude Code 中呼叫：
 

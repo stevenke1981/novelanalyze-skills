@@ -1,0 +1,4 @@
+interface:
+  display_name: "小說有聲書製作材料"
+  short_description: "將小說拆成旁白與角色台詞，輸出 Fish S2 Pro 配音材料與請求"
+  default_prompt: "Use $novel-audiobook 分析小說並輸出 Fish S2 Pro 可用的分段台詞、角色音色表與 TTS 請求材料。"

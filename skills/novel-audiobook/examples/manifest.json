@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "model": "s2-pro",
+  "endpoint": "https://api.fish.audio/v1/tts",
+  "headers": {
+    "Content-Type": "application/json",
+    "model": "s2-pro"
+  },
+  "items": [
+    {
+      "segment_id": "ch001-s0001",
+      "order": 1,
+      "status": "blocked",
+      "request_file": null,
+      "text_file": "text/ch001-s0001.txt",
+      "output_file": "audio/ch001-s0001.wav",
+      "pause_after_ms": 250,
+      "blocked_reasons": [
+        "尚未提供真實 Fish 聲音 ID"
+      ]
+    },
+    {
+      "segment_id": "ch001-s0002",
+      "order": 2,
+      "status": "blocked",
+      "request_file": null,
+      "text_file": "text/ch001-s0002.txt",
+      "output_file": "audio/ch001-s0002.wav",
+      "pause_after_ms": 250,
+      "blocked_reasons": [
+        "尚未提供真實 Fish 聲音 ID"
+      ]
+    },
+    {
+      "segment_id": "ch001-s0003",
+      "order": 3,
+      "status": "blocked",
+      "request_file": null,
+      "text_file": "text/ch001-s0003.txt",
+      "output_file": "audio/ch001-s0003.wav",
+      "pause_after_ms": 250,
+      "blocked_reasons": [
+        "尚未提供真實 Fish 聲音 ID"
+      ]
+    },
+    {
+      "segment_id": "ch001-s0004",
+      "order": 4,
+      "status": "blocked",
+      "request_file": null,
+      "text_file": "text/ch001-s0004.txt",
+      "output_file": "audio/ch001-s0004.wav",
+      "pause_after_ms": 250,
+      "blocked_reasons": [
+        "尚未提供真實 Fish 聲音 ID"
+      ]
+    },
+    {
+      "segment_id": "ch001-s0005",
+      "order": 5,
+      "status": "blocked",
+      "request_file": null,
+      "text_file": "text/ch001-s0005.txt",
+      "output_file": "audio/ch001-s0005.wav",
+      "pause_after_ms": 250,
+      "blocked_reasons": [
+        "尚未提供真實 Fish 聲音 ID"
+      ]
+    },
+    {
+      "segment_id": "ch001-s0006",
+      "order": 6,
+      "status": "blocked",
+      "request_file": null,
+      "text_file": "text/ch001-s0006.txt",
+      "output_file": "audio/ch001-s0006.wav",
+      "pause_after_ms": 250,
+      "blocked_reasons": [
+        "尚未提供真實 Fish 聲音 ID"
+      ]
+    }
+  ]
+}

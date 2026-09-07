@@ -2,7 +2,7 @@
 
 # novelanalyze-skills
 
-Self-contained fiction-analysis skills for AI coding agents. The repository ships `novel-characters` and `novel-bible`: the first turns prose into a production-ready character pack, and the second adds a source-grounded timeline and relationship bible.
+Self-contained fiction-analysis skills for AI coding agents. The repository ships `novel-characters` for character packs, `novel-bible` for source-grounded plot analysis, and [novel-audiobook](skills/novel-audiobook/README.md) for narration, dialogue, pronunciation notes, and Fish S2 Pro TTS request materials. Audiobook preparation does not call a paid TTS service; missing voice IDs remain explicitly blocked.
 
 ## Capabilities
 
@@ -22,7 +22,7 @@ Agent skills directory (Codex, OpenCode, or Claude Code):
 npx skills add stevenke1981/novelanalyze-skills
 ```
 
-This installs `novel-characters` and `novel-bible` into the current agent's skills folder. Use the installers below when you want SHA-256 tree verification on Windows or symlink updates on macOS and Linux.
+This installs all three skills into the current agent's skills folder. Use the installers below when you want SHA-256 tree verification on Windows or symlink updates on macOS and Linux.
 
 Windows:
 

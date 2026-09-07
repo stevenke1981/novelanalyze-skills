@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "title": "雨後",
+  "language": "zh-TW",
+  "scope": {
+    "complete": true,
+    "excluded": [],
+    "included": [
+      "全文"
+    ]
+  },
+  "source_file": "source.txt",
+  "chapters": [
+    {
+      "title": "雨後",
+      "id": "ch001"
+    }
+  ],
+  "voices": [
+    {
+      "name": "旁白",
+      "description_basis": "製作建議",
+      "id": "narrator",
+      "voice_description": "清楚平穩的台灣華語旁白",
+      "reference_id": null
+    },
+    {
+      "name": "小青",
+      "description_basis": "製作建議，原文沒有聲線證據",
+      "id": "xiaoqing",
+      "voice_description": "明亮輕柔，語速適中",
+      "reference_id": null
+    },
+    {
+      "name": "阿遠",
+      "description_basis": "製作建議，原文沒有聲線證據",
+      "id": "ayuan",
+      "voice_description": "沉穩低柔，與小青區別",
+      "reference_id": null
+    }
+  ],
+  "segments": [
+    {
+      "id": "ch001-s0001",
+      "order": 1,
+      "chapter_id": "ch001",
+      "kind": "narration",
+      "speaker_id": "narrator",
+      "attribution": {
+        "status": "confirmed",
+        "evidence": "小青問",
+        "candidates": []
+      },
+      "source_start": 0,
+      "source_end": 8,
+      "source_text": "雨停了。小青問：",
+      "spoken_text": "雨停了。小青問：",
+      "edits": [],
+      "direction": {
+        "reason": "採中性，未額外推測情緒",
+        "cue": ""
+      },
+      "tts_text": "雨停了。小青問：",
+      "pause_after_ms": 250
+    },
+    {
+      "id": "ch001-s0002",
+      "order": 2,
+      "chapter_id": "ch001",
+      "kind": "dialogue",
+      "speaker_id": "xiaoqing",
+      "attribution": {
+        "status": "confirmed",
+        "evidence": "小青問",
+        "candidates": []
+      },
+      "source_start": 8,
+      "source_end": 15,
+      "source_text": "「你要走嗎？」",
+      "spoken_text": "你要走嗎？",
+      "edits": [
+        {
+          "from": "「",
+          "reason": "朗讀省略引號",
+          "to": ""
+        },
+        {
+          "from": "」",
+          "reason": "朗讀省略引號",
+          "to": ""
+        }
+      ],
+      "direction": {
+        "reason": "採中性，未額外推測情緒",
+        "cue": ""
+      },
+      "tts_text": "你要走嗎？",
+      "pause_after_ms": 250
+    },
+    {
+      "id": "ch001-s0003",
+      "order": 3,
+      "chapter_id": "ch001",
+      "kind": "narration",
+      "speaker_id": "narrator",
+      "attribution": {
+        "status": "confirmed",
+        "evidence": "阿遠說",
+        "candidates": []
+      },
+      "source_start": 15,
+      "source_end": 19,
+      "source_text": "阿遠說：",
+      "spoken_text": "阿遠說：",
+      "edits": [],
+      "direction": {
+        "reason": "採中性，未額外推測情緒",
+        "cue": ""
+      },
+      "tts_text": "阿遠說：",
+      "pause_after_ms": 250
+    },
+    {
+      "id": "ch001-s0004",
+      "order": 4,
+      "chapter_id": "ch001",
+      "kind": "dialogue",
+      "speaker_id": "ayuan",
+      "attribution": {
+        "status": "confirmed",
+        "evidence": "阿遠說",
+        "candidates": []
+      },
+      "source_start": 19,
+      "source_end": 26,
+      "source_text": "「明天回來。」",
+      "spoken_text": "明天回來。",
+      "edits": [
+        {
+          "from": "「",
+          "reason": "朗讀省略引號",
+          "to": ""
+        },
+        {
+          "from": "」",
+          "reason": "朗讀省略引號",
+          "to": ""
+        }
+      ],
+      "direction": {
+        "reason": "採中性，未額外推測情緒",
+        "cue": ""
+      },
+      "tts_text": "明天回來。",
+      "pause_after_ms": 250
+    },
+    {
+      "id": "ch001-s0005",
+      "order": 5,
+      "chapter_id": "ch001",
+      "kind": "narration",
+      "speaker_id": "narrator",
+      "attribution": {
+        "status": "confirmed",
+        "evidence": "小青心想",
+        "candidates": []
+      },
+      "source_start": 26,
+      "source_end": 31,
+      "source_text": "小青心想，",
+      "spoken_text": "小青心想，",
+      "edits": [],
+      "direction": {
+        "reason": "採中性，未額外推測情緒",
+        "cue": ""
+      },
+      "tts_text": "小青心想，",
+      "pause_after_ms": 250
+    },
+    {
+      "id": "ch001-s0006",
+      "order": 6,
+      "chapter_id": "ch001",
+      "kind": "thought",
+      "speaker_id": "xiaoqing",
+      "attribution": {
+        "status": "confirmed",
+        "evidence": "小青心想",
+        "candidates": []
+      },
+      "source_start": 31,
+      "source_end": 40,
+      "source_text": "這次一定要相信他。",
+      "spoken_text": "這次一定要相信他。",
+      "edits": [],
+      "direction": {
+        "reason": "採中性，未額外推測情緒",
+        "cue": ""
+      },
+      "tts_text": "這次一定要相信他。",
+      "pause_after_ms": 250
+    }
+  ],
+  "pronunciation": [],
+  "issues": [
+    "三個聲音尚未綁定真實 Fish 聲音 ID"
+  ]
+}
